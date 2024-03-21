@@ -18,15 +18,14 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
-  private static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
+  private static final double WHEEL_RADIUS_METERS = 2.0 * Math.PI * (5.08 / 100);
 
-  private final ModuleIO io;
-  private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
+  private final ModuleIO moduleIO;
+  private final ModuleIOInputsAutoLogged moduleIOInputs = new ModuleIOInputsAutoLogged();
   private final int index;
 
   private final SimpleMotorFeedforward driveFeedforward;
@@ -34,10 +33,11 @@ public class Module {
   private final PIDController turnFeedback;
   private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
   private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
-  private Rotation2d turnRelativeOffset = null; // Relative + Offset = Absolute
+
+  private Rotation2d azimuthRelativeOffset = null; // Relative + Offset = Absolute
 
   public Module(ModuleIO io, int index) {
-    this.io = io;
+    this.moduleIO = io;
     this.index = index;
 
     // Switch constants based on mode (the physics simulator is treated as a
@@ -66,18 +66,20 @@ public class Module {
   }
 
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    moduleIO.updateInputs(moduleIOInputs);
+    Logger.processInputs("Drive/Module" + Integer.toString(index), moduleIOInputs);
 
     // On first cycle, reset relative turn encoder
     // Wait until absolute angle is nonzero in case it wasn't initialized yet
-    if (turnRelativeOffset == null && inputs.azimuthAbsolutePosition.getRadians() != 0.0) {
-      turnRelativeOffset = inputs.azimuthAbsolutePosition.minus(inputs.azimuthPosition);
+    if (azimuthRelativeOffset == null
+        && moduleIOInputs.azimuthAbsolutePosition.getRadians() != 0.0) {
+      azimuthRelativeOffset =
+          moduleIOInputs.azimuthAbsolutePosition.minus(moduleIOInputs.azimuthPosition);
     }
 
     // Run closed loop turn control
     if (angleSetpoint != null) {
-      io.setAzimuthVoltage(
+      moduleIO.setAzimuthVoltage(
           turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
 
       // Run closed loop drive control
@@ -91,10 +93,11 @@ public class Module {
         double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.getPositionError());
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS;
-        io.setDriveVoltage(
+        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS_METERS;
+        moduleIO.setDriveVoltage(
             driveFeedforward.calculate(velocityRadPerSec)
-                + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+                + driveFeedback.calculate(
+                    moduleIOInputs.driveVelocityRadPerSec, velocityRadPerSec));
       }
     }
   }
@@ -118,14 +121,14 @@ public class Module {
     angleSetpoint = new Rotation2d();
 
     // Open loop drive control
-    io.setDriveVoltage(volts);
+    moduleIO.setDriveVoltage(volts);
     speedSetpoint = null;
   }
 
   /** Disables all outputs to motors. */
   public void stop() {
-    io.setAzimuthVoltage(0.0);
-    io.setDriveVoltage(0.0);
+    moduleIO.setAzimuthVoltage(0.0);
+    moduleIO.setDriveVoltage(0.0);
 
     // Disable closed loop control for turn and drive
     angleSetpoint = null;
@@ -134,27 +137,27 @@ public class Module {
 
   /** Sets whether brake mode is enabled. */
   public void setBrakeMode(boolean enabled) {
-    io.setDriveBrakeMode(enabled);
-    io.setAzimuthBrakeMode(enabled);
+    moduleIO.setDriveBrakeMode(enabled);
+    moduleIO.setAzimuthBrakeMode(enabled);
   }
 
   /** Returns the current turn angle of the module. */
   public Rotation2d getAngle() {
-    if (turnRelativeOffset == null) {
+    if (azimuthRelativeOffset == null) {
       return new Rotation2d();
     } else {
-      return inputs.azimuthPosition.plus(turnRelativeOffset);
+      return moduleIOInputs.azimuthPosition.plus(azimuthRelativeOffset);
     }
   }
 
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
-    return inputs.drivePositionRad * WHEEL_RADIUS;
+    return moduleIOInputs.drivePositionRad * WHEEL_RADIUS_METERS;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */
   public double getVelocityMetersPerSec() {
-    return inputs.driveVelocityRadPerSec * WHEEL_RADIUS;
+    return moduleIOInputs.driveVelocityRadPerSec * WHEEL_RADIUS_METERS;
   }
 
   /** Returns the module position (turn angle and drive position). */
@@ -169,6 +172,6 @@ public class Module {
 
   /** Returns the drive velocity in radians/sec. */
   public double getCharacterizationVelocity() {
-    return inputs.driveVelocityRadPerSec;
+    return moduleIOInputs.driveVelocityRadPerSec;
   }
 }

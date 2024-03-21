@@ -13,14 +13,13 @@
 
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.RobotController;
 
 /**
  * Module IO implementation for SparkMax drive motor controller, SparkMax turn motor controller (NEO
@@ -44,36 +43,39 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   private final RelativeEncoder driveEncoder;
   private final RelativeEncoder azimuthRelativeEncoder;
-  private final AnalogInput azimuthAbsoluteEncoder;
+  private final CANcoder azimuthAbsoluteEncoder;
 
-  private final boolean isAzimuthMotorInverted = true;
   private final Rotation2d absoluteEncoderOffset;
 
   public ModuleIOSparkMax(int index) {
     switch (index) {
       case 0:
-        driveMotor = new CANSparkMax(1, MotorType.kBrushless);
-        azimuthMotor = new CANSparkMax(2, MotorType.kBrushless);
-        azimuthAbsoluteEncoder = new AnalogInput(0);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+        driveMotor = new CANSparkMax(11, MotorType.kBrushless);
+        azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
+        azimuthAbsoluteEncoder = new CANcoder(31, "CTREBUS");
+
+        absoluteEncoderOffset = Rotation2d.fromRotations(-0.275879);
         break;
       case 1:
-        driveMotor = new CANSparkMax(3, MotorType.kBrushless);
-        azimuthMotor = new CANSparkMax(4, MotorType.kBrushless);
-        azimuthAbsoluteEncoder = new AnalogInput(1);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+        driveMotor = new CANSparkMax(12, MotorType.kBrushless);
+        azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
+        azimuthAbsoluteEncoder = new CANcoder(32, "CTREBUS");
+
+        absoluteEncoderOffset = Rotation2d.fromRotations(-0.273926);
         break;
       case 2:
-        driveMotor = new CANSparkMax(5, MotorType.kBrushless);
-        azimuthMotor = new CANSparkMax(6, MotorType.kBrushless);
-        azimuthAbsoluteEncoder = new AnalogInput(2);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+        driveMotor = new CANSparkMax(13, MotorType.kBrushless);
+        azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
+        azimuthAbsoluteEncoder = new CANcoder(33, "CTREBUS");
+
+        absoluteEncoderOffset = Rotation2d.fromRotations(-0.390137);
         break;
       case 3:
-        driveMotor = new CANSparkMax(7, MotorType.kBrushless);
-        azimuthMotor = new CANSparkMax(8, MotorType.kBrushless);
-        azimuthAbsoluteEncoder = new AnalogInput(3);
-        absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
+        driveMotor = new CANSparkMax(14, MotorType.kBrushless);
+        azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
+        azimuthAbsoluteEncoder = new CANcoder(34, "CTREBUS");
+
+        absoluteEncoderOffset = Rotation2d.fromRotations(0.382568);
         break;
       default:
         throw new RuntimeException("Invalid module index");
@@ -88,7 +90,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveEncoder = driveMotor.getEncoder();
     azimuthRelativeEncoder = azimuthMotor.getEncoder();
 
-    azimuthMotor.setInverted(isAzimuthMotorInverted);
+    driveMotor.setInverted(false);
+    azimuthMotor.setInverted(true);
+
     driveMotor.setSmartCurrentLimit(40);
     azimuthMotor.setSmartCurrentLimit(30);
     driveMotor.enableVoltageCompensation(12.0);
@@ -101,6 +105,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthRelativeEncoder.setPosition(0.0);
     azimuthRelativeEncoder.setMeasurementPeriod(10);
     azimuthRelativeEncoder.setAverageDepth(2);
+
+    driveMotor.setIdleMode(IdleMode.kBrake);
+    azimuthMotor.setIdleMode(IdleMode.kCoast);
 
     driveMotor.setCANTimeout(0);
     azimuthMotor.setCANTimeout(0);
@@ -119,8 +126,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
 
     inputs.azimuthAbsolutePosition =
-        new Rotation2d(
-                azimuthAbsoluteEncoder.getVoltage() / RobotController.getVoltage5V() * 2.0 * Math.PI)
+        new Rotation2d(azimuthAbsoluteEncoder.getAbsolutePosition().getValueAsDouble())
             .minus(absoluteEncoderOffset);
     inputs.azimuthPosition =
         Rotation2d.fromRotations(azimuthRelativeEncoder.getPosition() / AZIMUTH_GEAR_RATIO);
