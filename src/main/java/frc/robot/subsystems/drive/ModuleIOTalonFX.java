@@ -40,7 +40,7 @@ import edu.wpi.first.math.util.Units;
  */
 public class ModuleIOTalonFX implements ModuleIO {
   private final TalonFX driveTalon;
-  private final TalonFX turnTalon;
+  private final TalonFX azimuthTalon;
   private final CANcoder cancoder;
 
   private final StatusSignal<Double> drivePosition;
@@ -48,42 +48,42 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final StatusSignal<Double> driveAppliedVolts;
   private final StatusSignal<Double> driveCurrent;
 
-  private final StatusSignal<Double> turnAbsolutePosition;
-  private final StatusSignal<Double> turnPosition;
-  private final StatusSignal<Double> turnVelocity;
-  private final StatusSignal<Double> turnAppliedVolts;
-  private final StatusSignal<Double> turnCurrent;
+  private final StatusSignal<Double> azimuthAbsolutePosition;
+  private final StatusSignal<Double> azimuthPosition;
+  private final StatusSignal<Double> azimuthVelocity;
+  private final StatusSignal<Double> azimuthAppliedVolts;
+  private final StatusSignal<Double> azimuthCurrent;
 
   // Gear ratios for SDS MK4i L2, adjust as necessary
-  private final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
-  private final double TURN_GEAR_RATIO = 150.0 / 7.0;
+  private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
+  private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
 
-  private final boolean isTurnMotorInverted = true;
+  private final boolean isAzimuthMotorInverted = true;
   private final Rotation2d absoluteEncoderOffset;
 
   public ModuleIOTalonFX(int index) {
     switch (index) {
       case 0:
         driveTalon = new TalonFX(0);
-        turnTalon = new TalonFX(1);
+        azimuthTalon = new TalonFX(1);
         cancoder = new CANcoder(2);
         absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
         break;
       case 1:
         driveTalon = new TalonFX(3);
-        turnTalon = new TalonFX(4);
+        azimuthTalon = new TalonFX(4);
         cancoder = new CANcoder(5);
         absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
         break;
       case 2:
         driveTalon = new TalonFX(6);
-        turnTalon = new TalonFX(7);
+        azimuthTalon = new TalonFX(7);
         cancoder = new CANcoder(8);
         absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
         break;
       case 3:
         driveTalon = new TalonFX(9);
-        turnTalon = new TalonFX(10);
+        azimuthTalon = new TalonFX(10);
         cancoder = new CANcoder(11);
         absoluteEncoderOffset = new Rotation2d(0.0); // MUST BE CALIBRATED
         break;
@@ -100,8 +100,8 @@ public class ModuleIOTalonFX implements ModuleIO {
     var turnConfig = new TalonFXConfiguration();
     turnConfig.CurrentLimits.SupplyCurrentLimit = 30.0;
     turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    turnTalon.getConfigurator().apply(turnConfig);
-    setTurnBrakeMode(true);
+    azimuthTalon.getConfigurator().apply(turnConfig);
+    setAzimuthBrakeMode(true);
 
     cancoder.getConfigurator().apply(new CANcoderConfiguration());
 
@@ -110,25 +110,25 @@ public class ModuleIOTalonFX implements ModuleIO {
     driveAppliedVolts = driveTalon.getMotorVoltage();
     driveCurrent = driveTalon.getSupplyCurrent();
 
-    turnAbsolutePosition = cancoder.getAbsolutePosition();
-    turnPosition = turnTalon.getPosition();
-    turnVelocity = turnTalon.getVelocity();
-    turnAppliedVolts = turnTalon.getMotorVoltage();
-    turnCurrent = turnTalon.getSupplyCurrent();
+    azimuthAbsolutePosition = cancoder.getAbsolutePosition();
+    azimuthPosition = azimuthTalon.getPosition();
+    azimuthVelocity = azimuthTalon.getVelocity();
+    azimuthAppliedVolts = azimuthTalon.getMotorVoltage();
+    azimuthCurrent = azimuthTalon.getSupplyCurrent();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        100.0, drivePosition, turnPosition); // Required for odometry, use faster rate
+        100.0, drivePosition, azimuthPosition); // Required for odometry, use faster rate
     BaseStatusSignal.setUpdateFrequencyForAll(
         50.0,
         driveVelocity,
         driveAppliedVolts,
         driveCurrent,
-        turnAbsolutePosition,
-        turnVelocity,
-        turnAppliedVolts,
-        turnCurrent);
+        azimuthAbsolutePosition,
+        azimuthVelocity,
+        azimuthAppliedVolts,
+        azimuthCurrent);
     driveTalon.optimizeBusUtilization();
-    turnTalon.optimizeBusUtilization();
+    azimuthTalon.optimizeBusUtilization();
   }
 
   @Override
@@ -138,11 +138,11 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveVelocity,
         driveAppliedVolts,
         driveCurrent,
-        turnAbsolutePosition,
-        turnPosition,
-        turnVelocity,
-        turnAppliedVolts,
-        turnCurrent);
+        azimuthAbsolutePosition,
+        azimuthPosition,
+        azimuthVelocity,
+        azimuthAppliedVolts,
+        azimuthCurrent);
 
     inputs.drivePositionRad =
         Units.rotationsToRadians(drivePosition.getValueAsDouble()) / DRIVE_GEAR_RATIO;
@@ -151,15 +151,15 @@ public class ModuleIOTalonFX implements ModuleIO {
     inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
     inputs.driveCurrentAmps = new double[] {driveCurrent.getValueAsDouble()};
 
-    inputs.turnAbsolutePosition =
-        Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble())
+    inputs.azimuthAbsolutePosition =
+        Rotation2d.fromRotations(azimuthAbsolutePosition.getValueAsDouble())
             .minus(absoluteEncoderOffset);
-    inputs.turnPosition =
-        Rotation2d.fromRotations(turnPosition.getValueAsDouble() / TURN_GEAR_RATIO);
-    inputs.turnVelocityRadPerSec =
-        Units.rotationsToRadians(turnVelocity.getValueAsDouble()) / TURN_GEAR_RATIO;
-    inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
-    inputs.turnCurrentAmps = new double[] {turnCurrent.getValueAsDouble()};
+    inputs.azimuthPosition =
+        Rotation2d.fromRotations(azimuthPosition.getValueAsDouble() / AZIMUTH_GEAR_RATIO);
+    inputs.azimuthVelocityRadPerSec =
+        Units.rotationsToRadians(azimuthVelocity.getValueAsDouble()) / AZIMUTH_GEAR_RATIO;
+    inputs.azimuthAppliedVolts = azimuthAppliedVolts.getValueAsDouble();
+    inputs.azimuthCurrentAmps = new double[] {azimuthCurrent.getValueAsDouble()};
   }
 
   @Override
@@ -168,8 +168,8 @@ public class ModuleIOTalonFX implements ModuleIO {
   }
 
   @Override
-  public void setTurnVoltage(double volts) {
-    turnTalon.setControl(new VoltageOut(volts));
+  public void setAzimuthVoltage(double volts) {
+    azimuthTalon.setControl(new VoltageOut(volts));
   }
 
   @Override
@@ -181,13 +181,13 @@ public class ModuleIOTalonFX implements ModuleIO {
   }
 
   @Override
-  public void setTurnBrakeMode(boolean enable) {
+  public void setAzimuthBrakeMode(boolean enable) {
     var config = new MotorOutputConfigs();
     config.Inverted =
-        isTurnMotorInverted
+        isAzimuthMotorInverted
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
     config.NeutralMode = enable ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-    turnTalon.getConfigurator().apply(config);
+    azimuthTalon.getConfigurator().apply(config);
   }
 }

@@ -29,28 +29,29 @@ public class ModuleIOSim implements ModuleIO {
   private static final double LOOP_PERIOD_SECS = 0.02;
 
   private DCMotorSim driveSim = new DCMotorSim(DCMotor.getNEO(1), 6.75, 0.025);
-  private DCMotorSim turnSim = new DCMotorSim(DCMotor.getNEO(1), 150.0 / 7.0, 0.004);
+  private DCMotorSim azimuthSim = new DCMotorSim(DCMotor.getNEO(1), 150.0 / 7.0, 0.004);
 
-  private final Rotation2d turnAbsoluteInitPosition = new Rotation2d(Math.random() * 2.0 * Math.PI);
+  private final Rotation2d azimuthAbsoluteInitPosition = new Rotation2d(Math.random() * 2.0 * Math.PI);
+  
   private double driveAppliedVolts = 0.0;
-  private double turnAppliedVolts = 0.0;
+  private double azimuthAppliedVolts = 0.0;
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
     driveSim.update(LOOP_PERIOD_SECS);
-    turnSim.update(LOOP_PERIOD_SECS);
+    azimuthSim.update(LOOP_PERIOD_SECS);
 
     inputs.drivePositionRad = driveSim.getAngularPositionRad();
     inputs.driveVelocityRadPerSec = driveSim.getAngularVelocityRadPerSec();
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveSim.getCurrentDrawAmps())};
 
-    inputs.turnAbsolutePosition =
-        new Rotation2d(turnSim.getAngularPositionRad()).plus(turnAbsoluteInitPosition);
-    inputs.turnPosition = new Rotation2d(turnSim.getAngularPositionRad());
-    inputs.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
-    inputs.turnAppliedVolts = turnAppliedVolts;
-    inputs.turnCurrentAmps = new double[] {Math.abs(turnSim.getCurrentDrawAmps())};
+    inputs.azimuthAbsolutePosition =
+        new Rotation2d(azimuthSim.getAngularPositionRad()).plus(azimuthAbsoluteInitPosition);
+    inputs.azimuthPosition = new Rotation2d(azimuthSim.getAngularPositionRad());
+    inputs.azimuthVelocityRadPerSec = azimuthSim.getAngularVelocityRadPerSec();
+    inputs.azimuthAppliedVolts = azimuthAppliedVolts;
+    inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthSim.getCurrentDrawAmps())};
   }
 
   @Override
@@ -60,8 +61,8 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public void setTurnVoltage(double volts) {
-    turnAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-    turnSim.setInputVoltage(turnAppliedVolts);
+  public void setAzimuthVoltage(double volts) {
+    azimuthAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    azimuthSim.setInputVoltage(azimuthAppliedVolts);
   }
 }

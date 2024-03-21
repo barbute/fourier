@@ -71,13 +71,13 @@ public class Module {
 
     // On first cycle, reset relative turn encoder
     // Wait until absolute angle is nonzero in case it wasn't initialized yet
-    if (turnRelativeOffset == null && inputs.turnAbsolutePosition.getRadians() != 0.0) {
-      turnRelativeOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition);
+    if (turnRelativeOffset == null && inputs.azimuthAbsolutePosition.getRadians() != 0.0) {
+      turnRelativeOffset = inputs.azimuthAbsolutePosition.minus(inputs.azimuthPosition);
     }
 
     // Run closed loop turn control
     if (angleSetpoint != null) {
-      io.setTurnVoltage(
+      io.setAzimuthVoltage(
           turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
 
       // Run closed loop drive control
@@ -124,7 +124,7 @@ public class Module {
 
   /** Disables all outputs to motors. */
   public void stop() {
-    io.setTurnVoltage(0.0);
+    io.setAzimuthVoltage(0.0);
     io.setDriveVoltage(0.0);
 
     // Disable closed loop control for turn and drive
@@ -135,7 +135,7 @@ public class Module {
   /** Sets whether brake mode is enabled. */
   public void setBrakeMode(boolean enabled) {
     io.setDriveBrakeMode(enabled);
-    io.setTurnBrakeMode(enabled);
+    io.setAzimuthBrakeMode(enabled);
   }
 
   /** Returns the current turn angle of the module. */
@@ -143,7 +143,7 @@ public class Module {
     if (turnRelativeOffset == null) {
       return new Rotation2d();
     } else {
-      return inputs.turnPosition.plus(turnRelativeOffset);
+      return inputs.azimuthPosition.plus(turnRelativeOffset);
     }
   }
 
