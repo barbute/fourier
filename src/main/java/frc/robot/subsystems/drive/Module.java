@@ -18,67 +18,87 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.util.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
-  private static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
+  private static final double WHEEL_RADIUS_METERS = 2.0 * Math.PI * (5.08 / 100);
 
-  private final ModuleIO io;
-  private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
+  private final ModuleIO moduleIO;
+  private final ModuleIOInputsAutoLogged moduleIOInputs = new ModuleIOInputsAutoLogged();
   private final int index;
 
-  private final SimpleMotorFeedforward driveFeedforward;
-  private final PIDController driveFeedback;
-  private final PIDController turnFeedback;
+  private SimpleMotorFeedforward driveFeedforward;
+  private PIDController driveFeedback;
+  private PIDController azimuthFeedback;
   private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
   private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
-  private Rotation2d turnRelativeOffset = null; // Relative + Offset = Absolute
+
+  private Rotation2d azimuthRelativeOffset = null; // Relative + Offset = Absolute
+
+  private LoggedTunableNumber driveFeedbackP = new LoggedTunableNumber("Drive/Tuning/DriveP", 0.0);
+  private LoggedTunableNumber driveFeedbackI = new LoggedTunableNumber("Drive/Tuning/DriveI", 0.0);
+  private LoggedTunableNumber driveFeedbackD = new LoggedTunableNumber("Drive/Tuning/DriveD", 0.0);
+
+  private LoggedTunableNumber azimuthFeedbackP =
+      new LoggedTunableNumber("Drive/Tuning/AzimuthP", 0.0);
+  private LoggedTunableNumber azimuthFeedbackI =
+      new LoggedTunableNumber("Drive/Tuning/AzimuthI", 0.0);
+  private LoggedTunableNumber azimuthFeedbackD =
+      new LoggedTunableNumber("Drive/Tuning/AzimuthD", 0.0);
 
   public Module(ModuleIO io, int index) {
-    this.io = io;
+    this.moduleIO = io;
     this.index = index;
 
     // Switch constants based on mode (the physics simulator is treated as a
     // separate robot with different tuning)
     switch (Constants.currentMode) {
       case REAL:
+        driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
+        driveFeedback =
+            new PIDController(driveFeedbackP.get(), driveFeedbackI.get(), driveFeedbackD.get());
+        azimuthFeedback =
+            new PIDController(
+                azimuthFeedbackP.get(), azimuthFeedbackI.get(), azimuthFeedbackD.get());
       case REPLAY:
         driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
         driveFeedback = new PIDController(0.05, 0.0, 0.0);
-        turnFeedback = new PIDController(7.0, 0.0, 0.0);
+        azimuthFeedback = new PIDController(7.0, 0.0, 0.0);
         break;
       case SIM:
         driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
         driveFeedback = new PIDController(0.1, 0.0, 0.0);
-        turnFeedback = new PIDController(10.0, 0.0, 0.0);
+        azimuthFeedback = new PIDController(10.0, 0.0, 0.0);
         break;
       default:
         driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
         driveFeedback = new PIDController(0.0, 0.0, 0.0);
-        turnFeedback = new PIDController(0.0, 0.0, 0.0);
+        azimuthFeedback = new PIDController(0.0, 0.0, 0.0);
         break;
     }
 
-    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
+    azimuthFeedback.enableContinuousInput(-Math.PI, Math.PI);
     setBrakeMode(true);
   }
 
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+    moduleIO.updateInputs(moduleIOInputs);
+    Logger.processInputs("Drive/Module" + Integer.toString(index), moduleIOInputs);
 
     // On first cycle, reset relative turn encoder
     // Wait until absolute angle is nonzero in case it wasn't initialized yet
-    if (turnRelativeOffset == null && inputs.turnAbsolutePosition.getRadians() != 0.0) {
-      turnRelativeOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition);
+    if (azimuthRelativeOffset == null
+        && moduleIOInputs.azimuthAbsolutePosition.getRadians() != 0.0) {
+      azimuthRelativeOffset =
+          moduleIOInputs.azimuthAbsolutePosition.minus(moduleIOInputs.azimuthPosition);
     }
 
     // Run closed loop turn control
     if (angleSetpoint != null) {
-      io.setTurnVoltage(
-          turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+      moduleIO.setAzimuthVoltage(
+          azimuthFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
 
       // Run closed loop drive control
       // Only allowed if closed loop turn control is running
@@ -88,14 +108,32 @@ public class Module {
         // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
         // towards the setpoint, its velocity should increase. This is achieved by
         // taking the component of the velocity in the direction of the setpoint.
-        double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.getPositionError());
+        double adjustSpeedSetpoint = speedSetpoint * Math.cos(azimuthFeedback.getPositionError());
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS;
-        io.setDriveVoltage(
+        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS_METERS;
+        moduleIO.setDriveVoltage(
             driveFeedforward.calculate(velocityRadPerSec)
-                + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+                + driveFeedback.calculate(
+                    moduleIOInputs.driveVelocityRadPerSec, velocityRadPerSec));
       }
+    }
+
+    // Update controllers
+    if (Constants.debuggingMode) {
+      LoggedTunableNumber.ifChanged(
+          hashCode(),
+          () -> setDrivePID(driveFeedbackP.get(), driveFeedbackI.get(), driveFeedbackD.get()),
+          driveFeedbackP,
+          driveFeedbackI,
+          driveFeedbackD);
+      LoggedTunableNumber.ifChanged(
+          hashCode(),
+          () ->
+              setAzimuthPID(azimuthFeedbackP.get(), azimuthFeedbackI.get(), azimuthFeedbackD.get()),
+          azimuthFeedbackP,
+          azimuthFeedbackI,
+          azimuthFeedbackD);
     }
   }
 
@@ -118,14 +156,14 @@ public class Module {
     angleSetpoint = new Rotation2d();
 
     // Open loop drive control
-    io.setDriveVoltage(volts);
+    moduleIO.setDriveVoltage(volts);
     speedSetpoint = null;
   }
 
   /** Disables all outputs to motors. */
   public void stop() {
-    io.setTurnVoltage(0.0);
-    io.setDriveVoltage(0.0);
+    moduleIO.setAzimuthVoltage(0.0);
+    moduleIO.setDriveVoltage(0.0);
 
     // Disable closed loop control for turn and drive
     angleSetpoint = null;
@@ -134,27 +172,41 @@ public class Module {
 
   /** Sets whether brake mode is enabled. */
   public void setBrakeMode(boolean enabled) {
-    io.setDriveBrakeMode(enabled);
-    io.setTurnBrakeMode(enabled);
+    moduleIO.setDriveBrakeMode(enabled);
+    moduleIO.setAzimuthBrakeMode(enabled);
+  }
+
+  /** Sets the PID gains for drive feedback */
+  private void setDrivePID(double kP, double kI, double kD) {
+    driveFeedback.setP(kP);
+    driveFeedback.setI(kI);
+    driveFeedback.setD(kD);
+  }
+
+  /** Sets the PID gains for azimuth feedback */
+  private void setAzimuthPID(double kP, double kI, double kD) {
+    azimuthFeedback.setP(kP);
+    azimuthFeedback.setI(kI);
+    azimuthFeedback.setD(kD);
   }
 
   /** Returns the current turn angle of the module. */
   public Rotation2d getAngle() {
-    if (turnRelativeOffset == null) {
+    if (azimuthRelativeOffset == null) {
       return new Rotation2d();
     } else {
-      return inputs.turnPosition.plus(turnRelativeOffset);
+      return moduleIOInputs.azimuthPosition.plus(azimuthRelativeOffset);
     }
   }
 
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
-    return inputs.drivePositionRad * WHEEL_RADIUS;
+    return moduleIOInputs.drivePositionRad * WHEEL_RADIUS_METERS;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */
   public double getVelocityMetersPerSec() {
-    return inputs.driveVelocityRadPerSec * WHEEL_RADIUS;
+    return moduleIOInputs.driveVelocityRadPerSec * WHEEL_RADIUS_METERS;
   }
 
   /** Returns the module position (turn angle and drive position). */
@@ -169,6 +221,6 @@ public class Module {
 
   /** Returns the drive velocity in radians/sec. */
   public double getCharacterizationVelocity() {
-    return inputs.driveVelocityRadPerSec;
+    return moduleIOInputs.driveVelocityRadPerSec;
   }
 }
