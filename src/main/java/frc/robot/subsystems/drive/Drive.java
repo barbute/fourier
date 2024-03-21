@@ -35,8 +35,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.debugging.Alert;
+import frc.robot.util.debugging.Alert.AlertType;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -85,6 +88,9 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+
+  private Alert gyroDisconnectAlert = new Alert("Console", "GYRO DISCONNECT", AlertType.ERROR);
+  private Alert pathfindEnabledAlert = new Alert("Console", "PATHFINDING ENABLED", AlertType.INFO);
 
   public Drive(
       GyroIO gyroIO,
@@ -168,6 +174,12 @@ public class Drive extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
       Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+    }
+
+    if (!gyroInputs.connected) {
+      gyroDisconnectAlert.set(true);
+    } else {
+      gyroDisconnectAlert.set(false);
     }
 
     // Read wheel positions and deltas from each module
@@ -307,7 +319,9 @@ public class Drive extends SubsystemBase {
 
     Command pathCommand = AutoBuilder.pathfindToPose(desiredPose.get(), pathConstraints, 0.0, 0.0);
 
-    return pathCommand;
+    return Commands.runOnce(() -> pathfindEnabledAlert.set(true))
+        .andThen(pathCommand)
+        .andThen(Commands.runOnce(() -> pathfindEnabledAlert.set(false)));
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */

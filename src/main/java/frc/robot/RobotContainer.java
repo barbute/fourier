@@ -32,6 +32,8 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.util.debugging.Alert;
+import frc.robot.util.debugging.Alert.AlertType;
 import frc.robot.util.math.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -87,6 +89,11 @@ public class RobotContainer {
                 new ModuleIO() {});
         break;
     }
+
+    new Alert("Console", "TARGETING SYSTEM FAILURE", AlertType.ERROR).set(true);
+    new Alert("Console", "SHOOTER FAILURE", AlertType.ERROR).set(true);
+    new Alert("Console", "HAPTICS FAILURE", AlertType.ERROR).set(true);
+    new Alert("Console", "PRIMARY SYSTEMS FAILURE", AlertType.WARNING).set(true);
 
     // Set up auto routines
     NamedCommands.registerCommand("Print", new PrintCommand("Hello, world!"));
