@@ -22,13 +22,15 @@ public interface ModuleIO {
     public double drivePositionRad = 0.0;
     public double driveVelocityRadPerSec = 0.0;
     public double driveAppliedVolts = 0.0;
-    public double[] driveCurrentAmps = new double[] {};
+    public double[] driveCurrentAmps = new double[] {0.0};
+    public double[] driveTemperatureCelsius = new double[] {0.0};
 
     public Rotation2d azimuthAbsolutePosition = new Rotation2d();
     public Rotation2d azimuthPosition = new Rotation2d();
     public double azimuthVelocityRadPerSec = 0.0;
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};
+    public double[] azimuthTemperatureCelsius = new double[] {};
   }
 
   /** Updates the set of loggable inputs. */

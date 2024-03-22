@@ -13,6 +13,7 @@
 
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -21,18 +22,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
-/**
- * Module IO implementation for SparkMax drive motor controller, SparkMax turn motor controller (NEO
- * or NEO 550), and analog absolute encoder connected to the RIO
- *
- * <p>NOTE: This implementation should be used as a starting point and adapted to different hardware
- * configurations (e.g. If using a CANcoder, copy from "ModuleIOTalonFX")
- *
- * <p>To calibrate the absolute encoder offsets, point the modules straight (such that forward
- * motion on the drive motor will propel the robot forward) and copy the reported values from the
- * absolute encoders using AdvantageScope. These values are logged under
- * "/Drive/ModuleX/TurnAbsolutePositionRad"
- */
+/** ModuleIO implementation for SparkMax drive motor controller, SparkMax turn motor controller */
 public class ModuleIOSparkMax implements ModuleIO {
   // Gear ratios for SDS MK4i L2
   private static final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
@@ -114,6 +104,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
+
+    azimuthAbsoluteEncoder.getConfigurator().apply(new CANcoderConfiguration());
   }
 
   @Override
