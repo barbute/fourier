@@ -6,25 +6,28 @@ package frc.robot.subsystems.intake;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.debugging.LoggedTunableNumber;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
   public enum IntakeSetpoints {
-    INTAKE(12.0),
-    OUTTAKE(-12.0),
-    SPEAKER_SHOOT(12.0),
-    AMP_SHOOT(12.0),
-    STOPPED(0.0);
+    INTAKE(() -> 12.0),
+    OUTTAKE(() -> -12.0),
+    SPEAKER_SHOOT(() -> 12.0),
+    AMP_SHOOT(() -> 12.0),
+    CUSTOM(new LoggedTunableNumber("Intake/VoltageSetpoint", 4.0)),
+    STOPPED(() -> 0.0);
 
-    private double setpointVolts;
+    private DoubleSupplier setpointVolts;
 
-    IntakeSetpoints(double volts) {
+    IntakeSetpoints(DoubleSupplier volts) {
       this.setpointVolts = volts;
     }
 
     public double getVolts() {
-      return this.setpointVolts;
+      return this.setpointVolts.getAsDouble();
     }
   }
 
