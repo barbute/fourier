@@ -16,8 +16,10 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -33,8 +35,12 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.debugging.Alert;
+import frc.robot.util.debugging.Alert.AlertType;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -83,6 +89,9 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+  private Alert gyroDisconnectAlert = new Alert("Console", "GYRO DISCONNECT", AlertType.ERROR);
+  private Alert pathfindEnabledAlert = new Alert("Console", "PATHFINDING ENABLED", AlertType.INFO);
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -109,7 +118,11 @@ public class Drive extends SubsystemBase {
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
-            MAX_LINEAR_SPEED_MPS, DRIVE_BASE_RADIUS, new ReplanningConfig(true, true)),
+            new PIDConstants(1.0, 0.0, 0.0),
+            new PIDConstants(1.0, 0.0, 0.0),
+            MAX_LINEAR_SPEED_MPS,
+            DRIVE_BASE_RADIUS,
+            new ReplanningConfig(true, true)),
         () ->
             DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red,
@@ -161,6 +174,12 @@ public class Drive extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
       Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+    }
+
+    if (!gyroInputs.connected) {
+      gyroDisconnectAlert.set(true);
+    } else {
+      gyroDisconnectAlert.set(false);
     }
 
     // Read wheel positions and deltas from each module
@@ -292,6 +311,17 @@ public class Drive extends SubsystemBase {
   /** Returns a command to run a dynamic test in the specified direction. */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return sysId.dynamic(direction);
+  }
+
+  /** Returns a command to pathfind to a position */
+  public Command pathfindToPose(Supplier<Pose2d> desiredPose) {
+    PathConstraints pathConstraints = new PathConstraints(4.42, 3.0, 540.0, 720.0);
+
+    Command pathCommand = AutoBuilder.pathfindToPose(desiredPose.get(), pathConstraints, 0.0, 0.0);
+
+    return Commands.runOnce(() -> pathfindEnabledAlert.set(true))
+        .andThen(pathCommand)
+        .andThen(Commands.runOnce(() -> pathfindEnabledAlert.set(false)));
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */

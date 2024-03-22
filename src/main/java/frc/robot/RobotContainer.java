@@ -17,6 +17,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,6 +32,7 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.util.math.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -119,7 +121,6 @@ public class RobotContainer {
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
-    pilotController.x().onTrue(Commands.runOnce(robotDrive::stopWithX, robotDrive));
     pilotController
         .b()
         .onTrue(
@@ -129,6 +130,17 @@ public class RobotContainer {
                             new Pose2d(robotDrive.getPose().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true));
+    pilotController
+        .a()
+        .whileTrue(
+            DriveCommands.pathfindToPose(
+                robotDrive,
+                () ->
+                    new Pose2d(
+                        AllianceFlipUtil.apply(FieldConstants.ampCenter)
+                            .plus(new Translation2d(0.0, -0.5)),
+                        Rotation2d.fromDegrees(-90.0))))
+        .onFalse(DriveCommands.stopDrive(robotDrive));
   }
 
   /**

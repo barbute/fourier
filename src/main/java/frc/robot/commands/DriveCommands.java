@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
@@ -73,5 +74,15 @@ public class DriveCommands {
                       : drive.getRotation()));
         },
         drive);
+  }
+
+  /** Returns a command to path find to a desire position */
+  public static Command pathfindToPose(Drive robotDrive, Supplier<Pose2d> desiredPose) {
+    return robotDrive.pathfindToPose(desiredPose);
+  }
+
+  /** Returns a command to set the velocity setpoint to 0 */
+  public static Command stopDrive(Drive robotDrive) {
+    return Commands.runOnce(() -> robotDrive.runVelocity(new ChassisSpeeds()), robotDrive);
   }
 }
