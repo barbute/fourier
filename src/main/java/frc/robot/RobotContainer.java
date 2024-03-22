@@ -152,7 +152,7 @@ public class RobotContainer {
         .y()
         .whileTrue(
             Commands.startEnd(
-                () -> robotIntake.runIntake(IntakeSetpoints.OUTTAKE),
+                () -> robotIntake.runIntake(IntakeSetpoints.CUSTOM),
                 () -> robotIntake.runIntake(IntakeSetpoints.STOPPED),
                 robotIntake));
   }

@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
 import java.util.function.Supplier;
@@ -91,6 +92,8 @@ public class Drive extends SubsystemBase {
 
   private Alert gyroDisconnectAlert = new Alert("Console", "GYRO DISCONNECT", AlertType.ERROR);
   private Alert pathfindEnabledAlert = new Alert("Console", "PATHFINDING ENABLED", AlertType.INFO);
+  private Alert debuggingModeEnabledAlert =
+      new Alert("Console", "TUNING MODE ENABLED", AlertType.WARNING);
 
   public Drive(
       GyroIO gyroIO,
@@ -180,6 +183,12 @@ public class Drive extends SubsystemBase {
       gyroDisconnectAlert.set(true);
     } else {
       gyroDisconnectAlert.set(false);
+    }
+
+    if (Constants.debuggingMode) {
+      debuggingModeEnabledAlert.set(true);
+    } else {
+      debuggingModeEnabledAlert.set(false);
     }
 
     // Read wheel positions and deltas from each module
