@@ -52,7 +52,15 @@ public class Indexer extends SubsystemBase {
     }
 
     if (currentSetpoint != null) {
-      indexerIO.setVolts(currentSetpoint.getVolts());
+      if (currentSetpoint != IndexerSetpoints.STOW) {
+        indexerIO.setVolts(currentSetpoint.getVolts());
+      } else {
+        if (indexerIOInputs.beamBroken) {
+          currentSetpoint = IndexerSetpoints.STOPPED;
+        } else {
+          indexerIO.setVolts(currentSetpoint.getVolts());
+        }
+      }
     }
   }
 
