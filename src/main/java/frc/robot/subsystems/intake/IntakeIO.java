@@ -11,9 +11,8 @@ public interface IntakeIO {
   public static class IntakeIOInputs {
     public double velocityRPM = 0.0;
     public double appliedVolts = 0.0;
-    public double internalVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
-    public double[] appliedTemperatureCelsius = new double[] {0.0};
+    public double[] temperatureCelsius = new double[] {0.0};
   }
 
   /** Updates the set of loggable inputs. */
