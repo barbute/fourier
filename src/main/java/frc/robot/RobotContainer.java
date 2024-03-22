@@ -32,6 +32,11 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeSetpoints;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.util.math.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -42,13 +47,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // Subsystems
-  private final Drive robotDrive;
+  private Drive robotDrive;
+  private Intake robotIntake;
 
-  // Controller
   private final CommandXboxController pilotController = new CommandXboxController(0);
 
-  // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -63,6 +66,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(1),
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3));
+        robotIntake = new Intake(new IntakeIOSparkMax());
         break;
 
       case SIM:
@@ -74,6 +78,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
+        robotIntake = new Intake(new IntakeIOSim());
         break;
 
       default:
@@ -85,6 +90,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        robotIntake = new Intake(new IntakeIO() {});
         break;
     }
 
@@ -141,6 +147,14 @@ public class RobotContainer {
                             .plus(new Translation2d(0.0, -0.5)),
                         Rotation2d.fromDegrees(-90.0))))
         .onFalse(DriveCommands.stopDrive(robotDrive));
+
+    pilotController
+        .y()
+        .whileTrue(
+            Commands.startEnd(
+                () -> robotIntake.runIntake(IntakeSetpoints.OUTTAKE),
+                () -> robotIntake.runIntake(IntakeSetpoints.STOPPED),
+                robotIntake));
   }
 
   /**
