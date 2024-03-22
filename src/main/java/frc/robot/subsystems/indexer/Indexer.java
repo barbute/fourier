@@ -4,14 +4,12 @@
 
 package frc.robot.subsystems.indexer;
 
-import java.util.function.DoubleSupplier;
-
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.debugging.LoggedTunableNumber;
+import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
   public enum IndexerSetpoints {
@@ -68,8 +66,7 @@ public class Indexer extends SubsystemBase {
   public IndexerSetpoints getCurrentSetpoint() {
     if (currentSetpoint != null) {
       return currentSetpoint;
-    }
-    else {
+    } else {
       return IndexerSetpoints.STOPPED;
     }
   }

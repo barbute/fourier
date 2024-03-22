@@ -32,6 +32,11 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexerSetpoints;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOSim;
+import frc.robot.subsystems.indexer.IndexerIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeSetpoints;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -49,6 +54,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private Drive robotDrive;
   private Intake robotIntake;
+  private Indexer robotIndexer;
 
   private final CommandXboxController pilotController = new CommandXboxController(0);
 
@@ -67,6 +73,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3));
         robotIntake = new Intake(new IntakeIOSparkMax());
+        robotIndexer = new Indexer(new IndexerIOSparkMax());
         break;
 
       case SIM:
@@ -79,6 +86,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         robotIntake = new Intake(new IntakeIOSim());
+        robotIndexer = new Indexer(new IndexerIOSim());
         break;
 
       default:
@@ -91,6 +99,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         robotIntake = new Intake(new IntakeIO() {});
+        robotIndexer = new Indexer(new IndexerIO() {});
         break;
     }
 
@@ -152,8 +161,14 @@ public class RobotContainer {
         .y()
         .whileTrue(
             Commands.startEnd(
-                () -> robotIntake.runIntake(IntakeSetpoints.CUSTOM),
-                () -> robotIntake.runIntake(IntakeSetpoints.STOPPED),
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.CUSTOM);
+                  robotIndexer.runIndexer(IndexerSetpoints.CUSTOM);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                },
                 robotIntake));
   }
 
