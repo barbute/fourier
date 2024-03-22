@@ -48,6 +48,7 @@ public class ModuleIOSim implements ModuleIO {
     inputs.driveVelocityRadPerSec = driveSim.getAngularVelocityRadPerSec();
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveSim.getCurrentDrawAmps())};
+    inputs.driveTemperatureCelsius = new double[] {0.0};
 
     inputs.azimuthAbsolutePosition =
         new Rotation2d(azimuthSim.getAngularPositionRad()).plus(azimuthAbsoluteInitPosition);
@@ -55,6 +56,7 @@ public class ModuleIOSim implements ModuleIO {
     inputs.azimuthVelocityRadPerSec = azimuthSim.getAngularVelocityRadPerSec();
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
     inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthSim.getCurrentDrawAmps())};
+    inputs.azimuthTemperatureCelsius = new double[] {0.0};
   }
 
   @Override
