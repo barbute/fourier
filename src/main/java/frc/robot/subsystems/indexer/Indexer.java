@@ -78,4 +78,9 @@ public class Indexer extends SubsystemBase {
       return IndexerSetpoints.STOPPED;
     }
   }
+
+  /** Returns if the sensor's beam has been broken or not */
+  public boolean getBeamBroken() {
+    return indexerIOInputs.beamBroken;
+  }
 }
