@@ -29,13 +29,15 @@ public interface LauncherIO {
 
   /** Run the top flywheel motor at the specified voltage. */
   public default void setTopVolts(double volts) {}
-  
+
   /** Run the bottom flywheel motor at the specified voltage. */
   public default void setBottomVolts(double volts) {}
 
   /** Run the top motor velocity setpoint for closed-loop control */
-  public default void setTopVelocityMPS(double velocitySetpointMPS) {}
+  public default void setTopVelocityMPS(
+      double velocitySetpointMPS, double accelerationSetpointMPS) {}
 
   /** Run the bottom motor velocity setpoint for closed-loop control */
-  public default void setBottomVelocityMPS(double velocitySetpointMPS) {}
+  public default void setBottomVelocityMPS(
+      double velocitySetpointMPS, double accelerationSetpointMPS) {}
 }

@@ -16,8 +16,8 @@ public class LauncherIOSim implements LauncherIO {
   public void setBottomVolts(double volts) {}
 
   @Override
-  public void setTopVelocityMPS(double velocitySetpointMPS) {}
+  public void setTopVelocityMPS(double velocitySetpointMPS, double accelerationSetpointMPS) {}
 
   @Override
-  public void setBottomVelocityMPS(double velocitySetpointMPS) {}
+  public void setBottomVelocityMPS(double velocitySetpointMPS, double accelerationSetpointMPS) {}
 }
