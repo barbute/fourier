@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-/** Add your docs here. */
+/** Physics sim implementation of AnglerIO */
 public class AnglerIOSim implements AnglerIO {
   private final double LOOP_PERIOD_SECS = 0.02;
   private final double GEAR_RATIO = 1.0 / 1.0;
