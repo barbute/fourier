@@ -12,7 +12,7 @@ public interface AnglerIO {
   public static class AnglerIOInputs {
     public Rotation2d absolutePosition = new Rotation2d();
     public Rotation2d relativePosition = new Rotation2d();
-    public double anglerDutyCycleFrequency = 0.0;
+    public int anglerDutyCycleFrequency = 0;
     public double appliedVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
     public double[] temperatureCelsius = new double[] {0.0};
