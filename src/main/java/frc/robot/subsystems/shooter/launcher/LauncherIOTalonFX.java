@@ -4,8 +4,14 @@
 
 package frc.robot.subsystems.shooter.launcher;
 
-/** Physics sim implementation of LauncherIO */
-public class LauncherIOSim implements LauncherIO {
+/** LauncherIO implementation for TalonFX motor controller (Falcon500) */
+public class LauncherIOTalonFX implements LauncherIO {
+  private final double GEARING = 1.0 / 1.0;
+  private final double RADIUS_M = 6.35 / 100;
+  private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
+
+  public LauncherIOTalonFX() {}
+
   @Override
   public void updateInputs(LauncherIOInputs inputs) {}
 

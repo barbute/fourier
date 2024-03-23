@@ -54,53 +54,37 @@ public class Module {
     switch (Constants.currentMode) {
       case REAL:
         driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
+        driveFeedback = new PIDController(0.1, 0.0, 0.0);
+        azimuthFeedback = new PIDController(10.0, 0.0, 0.0);
 
-        driveFeedbackP = new LoggedTunableNumber("Drive/Tuning/DriveP", 0.1);
-        driveFeedbackI = new LoggedTunableNumber("Drive/Tuning/DriveI", 0.0);
-        driveFeedbackD = new LoggedTunableNumber("Drive/Tuning/DriveD", 0.0);
-
-        azimuthFeedbackP = new LoggedTunableNumber("Drive/Tuning/AzimuthP", 10.0);
-        azimuthFeedbackI = new LoggedTunableNumber("Drive/Tuning/AzimuthI", 0.0);
-        azimuthFeedbackD = new LoggedTunableNumber("Drive/Tuning/AzimuthD", 0.0);
+        break;
       case SIM:
         driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
+        driveFeedback = new PIDController(0.1, 0.0, 0.0);
+        azimuthFeedback = new PIDController(10.0, 0.0, 0.0);
 
-        driveFeedbackP = new LoggedTunableNumber("Drive/Tuning/DriveP", 0.1);
-        driveFeedbackI = new LoggedTunableNumber("Drive/Tuning/DriveI", 0.0);
-        driveFeedbackD = new LoggedTunableNumber("Drive/Tuning/DriveD", 0.0);
-
-        azimuthFeedbackP = new LoggedTunableNumber("Drive/Tuning/AzimuthP", 10.0);
-        azimuthFeedbackI = new LoggedTunableNumber("Drive/Tuning/AzimuthI", 0.0);
-        azimuthFeedbackD = new LoggedTunableNumber("Drive/Tuning/AzimuthD", 0.0);
         break;
       case REPLAY:
         driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
+        driveFeedback = new PIDController(0.05, 0.0, 0.0);
+        azimuthFeedback = new PIDController(7.0, 0.0, 0.0);
 
-        driveFeedbackP = new LoggedTunableNumber("Drive/Tuning/DriveP", 0.05);
-        driveFeedbackI = new LoggedTunableNumber("Drive/Tuning/DriveI", 0.0);
-        driveFeedbackD = new LoggedTunableNumber("Drive/Tuning/DriveD", 0.0);
-
-        azimuthFeedbackP = new LoggedTunableNumber("Drive/Tuning/AzimuthP", 7.0);
-        azimuthFeedbackI = new LoggedTunableNumber("Drive/Tuning/AzimuthI", 0.0);
-        azimuthFeedbackD = new LoggedTunableNumber("Drive/Tuning/AzimuthD", 0.0);
         break;
       default:
         driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+        driveFeedback = new PIDController(0.0, 0.0, 0.0);
+        azimuthFeedback = new PIDController(0.0, 0.0, 0.0);
 
-        driveFeedbackP = new LoggedTunableNumber("Drive/Tuning/DriveP", 0.0);
-        driveFeedbackI = new LoggedTunableNumber("Drive/Tuning/DriveI", 0.0);
-        driveFeedbackD = new LoggedTunableNumber("Drive/Tuning/DriveD", 0.0);
-
-        azimuthFeedbackP = new LoggedTunableNumber("Drive/Tuning/AzimuthP", 0.0);
-        azimuthFeedbackI = new LoggedTunableNumber("Drive/Tuning/AzimuthI", 0.0);
-        azimuthFeedbackD = new LoggedTunableNumber("Drive/Tuning/AzimuthD", 0.0);
         break;
     }
 
-    driveFeedback =
-        new PIDController(driveFeedbackP.get(), driveFeedbackI.get(), driveFeedbackD.get());
-    azimuthFeedback =
-        new PIDController(azimuthFeedbackP.get(), azimuthFeedbackI.get(), azimuthFeedbackD.get());
+    driveFeedbackP = new LoggedTunableNumber("Drive/Tuning/DriveP", driveFeedback.getP());
+    driveFeedbackI = new LoggedTunableNumber("Drive/Tuning/DriveI", driveFeedback.getI());
+    driveFeedbackD = new LoggedTunableNumber("Drive/Tuning/DriveD", driveFeedback.getD());
+
+    azimuthFeedbackP = new LoggedTunableNumber("Drive/Tuning/AzimuthP", azimuthFeedback.getP());
+    azimuthFeedbackI = new LoggedTunableNumber("Drive/Tuning/AzimuthI", azimuthFeedback.getI());
+    azimuthFeedbackD = new LoggedTunableNumber("Drive/Tuning/AzimuthD", azimuthFeedback.getD());
 
     azimuthFeedback.enableContinuousInput(-Math.PI, Math.PI);
     setBrakeMode(true);
