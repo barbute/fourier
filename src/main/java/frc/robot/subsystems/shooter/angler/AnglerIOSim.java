@@ -15,7 +15,17 @@ public class AnglerIOSim implements AnglerIO {
   private final double LOOP_PERIOD_SECS = 0.02;
   private final double GEAR_RATIO = 1.0 / 1.0;
 
-  private SingleJointedArmSim anglerMotor = new SingleJointedArmSim(DCMotor.getNEO(1), GEAR_RATIO, 0.167248163371, 0.4826, Math.toRadians(20.0), Math.toRadians(60.0), false, Math.toRadians(45.0), VecBuilder.fill(0.0));
+  private SingleJointedArmSim anglerMotor =
+      new SingleJointedArmSim(
+          DCMotor.getNEO(1),
+          GEAR_RATIO,
+          0.167248163371,
+          0.4826,
+          Math.toRadians(20.0),
+          Math.toRadians(60.0),
+          false,
+          Math.toRadians(45.0),
+          VecBuilder.fill(0.0));
 
   private double appliedVolts = 0.0;
 
