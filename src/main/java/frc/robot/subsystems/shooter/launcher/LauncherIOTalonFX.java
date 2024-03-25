@@ -157,6 +157,8 @@ public class LauncherIOTalonFX implements LauncherIO {
           topConfiguration.Slot0.kP = topFeedbackP.get();
           topConfiguration.Slot0.kI = topFeedbackI.get();
           topConfiguration.Slot0.kD = topFeedbackD.get();
+
+          topMotor.getConfigurator().apply(topConfiguration);
         },
         topFeedbackP,
         topFeedbackI,
@@ -167,6 +169,8 @@ public class LauncherIOTalonFX implements LauncherIO {
           bottomConfiguration.Slot0.kP = bottomFeedbackP.get();
           bottomConfiguration.Slot0.kI = bottomFeedbackI.get();
           bottomConfiguration.Slot0.kD = bottomFeedbackD.get();
+
+          bottomMotor.getConfigurator().apply(bottomConfiguration);
         },
         bottomFeedbackP,
         bottomFeedbackI,
