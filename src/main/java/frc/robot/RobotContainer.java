@@ -42,6 +42,14 @@ import frc.robot.subsystems.intake.Intake.IntakeSetpoints;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.ShooterSetpoints;
+import frc.robot.subsystems.shooter.angler.AnglerIO;
+import frc.robot.subsystems.shooter.angler.AnglerIOSim;
+import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
+import frc.robot.subsystems.shooter.launcher.LauncherIO;
+import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
+import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
 import frc.robot.util.math.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -53,6 +61,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   private Drive robotDrive;
+  private Shooter robotShooter;
   private Intake robotIntake;
   private Indexer robotIndexer;
 
@@ -72,6 +81,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(1),
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3));
+        robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotIntake = new Intake(new IntakeIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         break;
@@ -85,6 +95,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim(),
                 new ModuleIOSim());
+        robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotIntake = new Intake(new IntakeIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         break;
@@ -98,6 +109,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+        robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotIntake = new Intake(new IntakeIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
         break;
@@ -158,7 +170,7 @@ public class RobotContainer {
         .onFalse(DriveCommands.stopDrive(robotDrive));
 
     pilotController
-        .y()
+        .leftBumper()
         .whileTrue(
             Commands.startEnd(
                 () -> {
@@ -170,6 +182,14 @@ public class RobotContainer {
                   robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
                 },
                 robotIntake));
+                
+    pilotController
+        .y()
+        .whileTrue(
+            Commands.startEnd(
+                () -> robotShooter.setMotors(ShooterSetpoints.CUSTOM),
+                () -> robotShooter.setMotors(ShooterSetpoints.STOPPED),
+                robotShooter));
 
     pilotController
         .x()

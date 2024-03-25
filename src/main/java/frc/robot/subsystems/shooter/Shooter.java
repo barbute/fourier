@@ -9,8 +9,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
@@ -28,7 +26,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
-  public enum ShooterClosedLoopSetpoints {
+  public enum ShooterSetpoints {
     INTAKE(() -> Rotation2d.fromDegrees(45.0), () -> 0.0, () -> 0.0),
     TRAVERSAL(() -> Rotation2d.fromDegrees(30.0), () -> 10.0, () -> 10.0),
     CLIMB(() -> Rotation2d.fromDegrees(25.0), () -> 0.0, () -> 0.0),
@@ -37,19 +35,20 @@ public class Shooter extends SubsystemBase {
     SUBWOOFER(() -> Rotation2d.fromDegrees(57.0), () -> 38.0, () -> 38.0),
     AMP(() -> Rotation2d.fromDegrees(54.0), () -> -4.5, () -> 12.0),
     FEEDER(() -> Rotation2d.fromDegrees(50.0), () -> 30.0, () -> 30.0),
-    STOPPED(
+    CUSTOM(
         () ->
             Rotation2d.fromDegrees(
                 new LoggedTunableNumber("Shooter/Angler/SetpointDebuggingDegrees", 0.0).get()),
         () -> new LoggedTunableNumber("Shooter/Launcher/TopDebuggingMPS", 0.0).get(),
         () -> new LoggedTunableNumber("Shooter/Launcher/BottomDebuggingMPS", 0.0).get()),
-    CUSTOM(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0);
+    HOLD(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0),
+    STOPPED(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0);
 
     private Supplier<Rotation2d> setpointPosition;
     private DoubleSupplier topSetpointVelocityMPS;
     private DoubleSupplier bottomSetpointVelocityMPS;
 
-    ShooterClosedLoopSetpoints(
+    ShooterSetpoints(
         Supplier<Rotation2d> position,
         DoubleSupplier topVelocityMPS,
         DoubleSupplier bottomVelocityMPS) {
@@ -71,7 +70,7 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  private ShooterClosedLoopSetpoints currentClosedLoopSetpoint = null;
+  private ShooterSetpoints currentClosedLoopSetpoint = null;
 
   private Rotation2d currentPositionSetpoint = null;
   private Double currentTopFlywheelVelocitySetpointMPS = null;
@@ -246,7 +245,7 @@ public class Shooter extends SubsystemBase {
 
   /** Sets the current setpoint to null and sets all motor voltages to 0 */
   public void stopMotors() {
-    currentClosedLoopSetpoint = ShooterClosedLoopSetpoints.STOPPED;
+    currentClosedLoopSetpoint = ShooterSetpoints.HOLD;
 
     currentPositionSetpoint = null;
     currentTopFlywheelVelocitySetpointMPS = null;
@@ -258,9 +257,17 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Set the motors using a pre-defined setpoint */
-  private void setMotors(ShooterClosedLoopSetpoints setpoint) {
-    setAnglerPosition(setpoint.getPosition());
-    setLauncherVelocityMPS(setpoint.getTopVelocityMPS(), setpoint.getBottomVelocityMPS());
+  public void setMotors(ShooterSetpoints setpoint) {
+    if (setpoint == ShooterSetpoints.HOLD) {
+      setAnglerPosition(currentPosition);
+      setLauncherVelocityMPS(
+          currentTopFlywheelVelocitySetpointMPS, currentBottomFlywheelVelocitySetpointMPS);
+    } else if (setpoint == ShooterSetpoints.STOPPED) {
+      stopMotors();
+    } else {
+      setAnglerPosition(setpoint.getPosition());
+      setLauncherVelocityMPS(setpoint.getTopVelocityMPS(), setpoint.getBottomVelocityMPS());
+    }
   }
 
   /** Set the angler position */
@@ -298,21 +305,9 @@ public class Shooter extends SubsystemBase {
     anglerFeedback.reset(getCurrentPosition().getDegrees(), 0.0);
   }
 
-  /** Returns a command to run the shooter motors to a preset setpoint */
-  public Command runShooter(ShooterClosedLoopSetpoints setpoint) {
-    return new FunctionalCommand(
-        () -> {
-          setMotors(setpoint);
-        },
-        () -> {},
-        (interrupted) -> {},
-        () -> atSetpoint(),
-        this);
-  }
-
   /** Returns the current setpoint of the Shooter */
   @AutoLogOutput(key = "Shooter/CurrentSetpoint")
-  public ShooterClosedLoopSetpoints getCurrentSetpoint() {
+  public ShooterSetpoints getCurrentSetpoint() {
     return currentClosedLoopSetpoint;
   }
 
