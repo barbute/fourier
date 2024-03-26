@@ -37,9 +37,4 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
-
-  public static enum Robot {
-    /** Competition robot 2024 - 9105 */
-    FOURIER
-  }
 }
