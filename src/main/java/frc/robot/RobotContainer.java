@@ -182,7 +182,7 @@ public class RobotContainer {
                   robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
                 },
                 robotIntake));
-                
+
     pilotController
         .y()
         .whileTrue(

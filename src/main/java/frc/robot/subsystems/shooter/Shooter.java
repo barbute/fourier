@@ -98,6 +98,8 @@ public class Shooter extends SubsystemBase {
   private Rotation2d angleOffset = new Rotation2d();
   private Rotation2d currentPosition = null;
 
+  private ShooterVisualizer visualizer;
+
   private Alert angleEncoderCalibratedSuccessAlert =
       new Alert("Console", "ANGLER ENCODER CALIBRATION SUCCESSFULL", AlertType.INFO);
   private Alert angleEncoderCalibratedFailedAlert =
@@ -184,9 +186,9 @@ public class Shooter extends SubsystemBase {
           angleEncoderCalibratedSuccessAlert.set(false);
           break;
         }
-        // TODO Initialize visualizer here
       }
       currentPosition = anglerIOInputs.relativePosition.plus(angleOffset);
+      visualizer = new ShooterVisualizer(currentPosition);
 
       resetAnglerFeedback();
     }
@@ -217,7 +219,11 @@ public class Shooter extends SubsystemBase {
           bottomFlywheelProfile.getCurrentAcceleration());
     }
 
-    // TODO Update visualizer here
+    if (visualizer != null) {
+      visualizer.updateShooterAngle(currentPosition);
+    } else {
+      visualizer = new ShooterVisualizer(currentPosition);
+    }
 
     if (Constants.debuggingMode) {
       // Only updates angler PIDs, launcher runs in its own IO implementation
@@ -258,6 +264,8 @@ public class Shooter extends SubsystemBase {
 
   /** Set the motors using a pre-defined setpoint */
   public void setMotors(ShooterSetpoints setpoint) {
+    currentClosedLoopSetpoint = setpoint;
+
     if (setpoint == ShooterSetpoints.HOLD) {
       setAnglerPosition(currentPosition);
       setLauncherVelocityMPS(
