@@ -6,11 +6,14 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
@@ -18,6 +21,7 @@ import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
 import frc.robot.util.debugging.LoggedTunableNumber;
+import frc.robot.util.math.AllianceFlipUtil;
 import frc.robot.util.math.LinearProfile;
 import frc.robot.util.math.ScrewArmFeedforward;
 import java.util.function.DoubleSupplier;
@@ -29,9 +33,16 @@ public class Shooter extends SubsystemBase {
   public enum ShooterSetpoints {
     INTAKE(() -> Rotation2d.fromDegrees(45.0), () -> 0.0, () -> 0.0),
     TRAVERSAL(() -> Rotation2d.fromDegrees(30.0), () -> 10.0, () -> 10.0),
-    CLIMB(() -> Rotation2d.fromDegrees(25.0), () -> 0.0, () -> 0.0),
-    // TODO Replace with targeting system angle when done
-    AIM(() -> Rotation2d.fromDegrees(0.0), () -> 38.0, () -> 38.0),
+    CLIMB(() -> Rotation2d.fromDegrees(27.0), () -> 0.0, () -> 0.0),
+    AIM(
+        () ->
+            TargetingSystem.getInstance()
+                .calculateOptimalAngle(
+                    new Pose3d(
+                        AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening),
+                        new Rotation3d())),
+        () -> 38.0,
+        () -> 38.0),
     SUBWOOFER(() -> Rotation2d.fromDegrees(57.0), () -> 38.0, () -> 38.0),
     AMP(() -> Rotation2d.fromDegrees(54.0), () -> -4.5, () -> 12.0),
     FEEDER(() -> Rotation2d.fromDegrees(50.0), () -> 30.0, () -> 30.0),
@@ -41,6 +52,7 @@ public class Shooter extends SubsystemBase {
                 new LoggedTunableNumber("Shooter/Angler/SetpointDebuggingDegrees", 0.0).get()),
         () -> new LoggedTunableNumber("Shooter/Launcher/TopDebuggingMPS", 0.0).get(),
         () -> new LoggedTunableNumber("Shooter/Launcher/BottomDebuggingMPS", 0.0).get()),
+    // HOLD and STOPPED are handled separately in setMotors(), so the setpoints are set to zero
     HOLD(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0),
     STOPPED(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0);
 
@@ -118,7 +130,8 @@ public class Shooter extends SubsystemBase {
         break;
       case SIM:
         anglerFeedback =
-            new ProfiledPIDController(0.1, 0.0, 0.5, new TrapezoidProfile.Constraints(50.0, 50.0));
+            new ProfiledPIDController(
+                0.1, 0.0, 0.3, new TrapezoidProfile.Constraints(800.0, 700.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
         break;
       case REPLAY:
