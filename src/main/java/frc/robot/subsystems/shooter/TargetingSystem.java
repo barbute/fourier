@@ -10,6 +10,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.util.debugging.Alert;
+import frc.robot.util.debugging.Alert.AlertType;
+import frc.robot.util.debugging.FudgeFactors;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -32,12 +37,17 @@ public class TargetingSystem {
   private Pose3d currentFilteredPose = new Pose3d();
 
   private boolean calculateWithVision = true;
+  private boolean useFudgeFactors = false;
 
   // Debugging data
   private double calculatedDistanceM = 0.0;
   private Rotation2d calculatedAngle = new Rotation2d();
   private Rotation2d calculatedHeading = new Rotation2d();
   private Pose3d targetPoseAngle = new Pose3d();
+
+  private Alert useVisionAlert = new Alert("Console", "CALCULATING WITH VISION", AlertType.INFO);
+  private Alert useFudgeFactorsAlert =
+      new Alert("Console", "USING FUDGE FACTORS", AlertType.WARNING);
 
   /** Returns the Targeting System's instance */
   public static TargetingSystem getInstance() {
@@ -49,6 +59,9 @@ public class TargetingSystem {
 
   /** Method that runs every loop cycle. Called in robotPeriodic() */
   public void periodic() {
+    useVisionAlert.set(calculateWithVision);
+    useFudgeFactorsAlert.set(useFudgeFactors);
+
     Logger.recordOutput("TargetingSystem/CalculatedDistance", calculatedDistanceM);
     Logger.recordOutput("TargetingSystem/CalculatedAngle", calculatedAngle);
     Logger.recordOutput("TargetingSystem/CalculatedHeading", calculatedHeading);
@@ -96,46 +109,55 @@ public class TargetingSystem {
     calculateWithVision = useVision;
   }
 
+  /** Returns the desired value with fudge factors (if applicable) */
+  public double applyFudgeFactors(double x) {
+    if (useFudgeFactors) {
+      if (DriverStation.getAlliance().isPresent()
+          && DriverStation.getAlliance().get() == Alliance.Red) {
+        return x + FudgeFactors.Red.SHOT_DISTANCE_COMPENSATION_M;
+      }
+      return x + FudgeFactors.Blue.SHOT_DISTANCE_COMPENSATION_M;
+    }
+    return x;
+  }
+
+  /** Returns the desired value with fudge factors (if applicable) */
+  public Rotation2d applyFudgeFactors(Rotation2d x) {
+    if (useFudgeFactors) {
+      if (DriverStation.getAlliance().isPresent()
+          && DriverStation.getAlliance().get() == Alliance.Red) {
+        return x.plus(FudgeFactors.Red.SHOT_POSITION_COMPENSATION);
+      }
+      return x.plus(FudgeFactors.Blue.SHOT_POSITION_COMPENSATION);
+    }
+    return x;
+  }
+
   /**
    * Calculate distance between the current pose (held inside the Targeting System) and the target
    * pose passed into this function
    */
   public double calculateDistance(Pose3d targetPose) {
-    if (calculateWithVision) {
-      // Must convert to Translation2d so we only calculate horizontal distance
-      Translation2d currentPose2d =
-          new Translation2d(currentFilteredPose.getX(), currentFilteredPose.getY());
-      Translation2d targetPose2d = new Translation2d(targetPose.getX(), targetPose.getY());
+    Pose3d currentPose = (calculateWithVision) ? currentFilteredPose : currentOdometryPose;
 
-      calculatedDistanceM = distanceFilter.calculate(currentPose2d.getDistance(targetPose2d));
-      return calculatedDistanceM;
-    } else {
-      Translation2d currentPose2d =
-          new Translation2d(currentOdometryPose.getX(), currentOdometryPose.getY());
-      Translation2d targetPose2d = new Translation2d(targetPose.getX(), targetPose.getY());
+    Translation2d currentPose2d = new Translation2d(currentPose.getX(), currentPose.getY());
+    Translation2d targetPose2d = new Translation2d(targetPose.getX(), targetPose.getY());
 
-      calculatedDistanceM = distanceFilter.calculate(currentPose2d.getDistance(targetPose2d));
-      return calculatedDistanceM;
-    }
+    calculatedDistanceM =
+        applyFudgeFactors(distanceFilter.calculate(currentPose2d.getDistance(targetPose2d)));
+    return calculatedDistanceM;
   }
 
   /** Calculate the optimal heading for the robot to shoot at a target */
   public Rotation2d calculateOptimalHeading(Pose3d targetPose) {
-    if (calculateWithVision) {
-      double deltaX = targetPose.getX() - currentFilteredPose.getX();
-      double deltaY = targetPose.getY() - currentFilteredPose.getY();
+    Pose3d currentPose = (calculateWithVision) ? currentFilteredPose : currentOdometryPose;
 
-      calculatedHeading = new Rotation2d(deltaX, deltaY);
+    double deltaX = targetPose.getX() - currentPose.getX();
+    double deltaY = targetPose.getY() - currentPose.getY();
 
-      return calculatedHeading;
-    } else {
-      double deltaX = targetPose.getX() - currentOdometryPose.getX();
-      double deltaY = targetPose.getY() - currentOdometryPose.getY();
+    calculatedHeading = applyFudgeFactors(new Rotation2d(deltaX, deltaY));
 
-      calculatedHeading = new Rotation2d(deltaX, deltaY);
-
-      return calculatedHeading;
-    }
+    return calculatedHeading;
   }
 
   /** Calculate the optimal angle for the shooter when passed in a taget pose */
@@ -147,7 +169,8 @@ public class TargetingSystem {
 
     double distanceM = calculateDistance(targetPose);
     calculatedAngle =
-        Rotation2d.fromDegrees(launchMap.get(distanceM)).plus(shotCompensationDegrees);
+        applyFudgeFactors(
+            Rotation2d.fromDegrees(launchMap.get(distanceM)).plus(shotCompensationDegrees));
 
     return calculatedAngle;
   }

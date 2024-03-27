@@ -92,11 +92,10 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
-  private Alert gyroDisconnectAlert = new Alert("Console", ":: GYRO DISCONNECT", AlertType.ERROR);
-  private Alert pathfindEnabledAlert =
-      new Alert("Console", ":: PATHFINDING ENABLED", AlertType.INFO);
+  private Alert gyroDisconnectAlert = new Alert("Console", "GYRO DISCONNECT", AlertType.ERROR);
+  private Alert pathfindEnabledAlert = new Alert("Console", "PATHFINDING ENABLED", AlertType.INFO);
   private Alert debuggingModeEnabledAlert =
-      new Alert("Console", ":: TUNING MODE ENABLED", AlertType.WARNING);
+      new Alert("Console", "TUNING MODE ENABLED", AlertType.WARNING);
 
   public Drive(
       GyroIO gyroIO,

@@ -113,9 +113,9 @@ public class Shooter extends SubsystemBase {
   private ShooterVisualizer visualizer;
 
   private Alert angleEncoderCalibratedSuccessAlert =
-      new Alert("Console", ":: ANGLER ENCODER CALIBRATION SUCCESSFULL", AlertType.INFO);
+      new Alert("Console", "ANGLER ENCODER CALIBRATION SUCCESSFULL", AlertType.INFO);
   private Alert angleEncoderCalibratedFailedAlert =
-      new Alert("Console", ":: ANGLER ENCODER CALIBRATION FAILED", AlertType.ERROR);
+      new Alert("Console", "ANGLER ENCODER CALIBRATION FAILED", AlertType.ERROR);
 
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
