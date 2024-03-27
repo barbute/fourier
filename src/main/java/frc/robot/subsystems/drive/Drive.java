@@ -24,6 +24,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -39,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
 import java.util.function.Supplier;
@@ -90,10 +92,11 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
-  private Alert gyroDisconnectAlert = new Alert("Console", "GYRO DISCONNECT", AlertType.ERROR);
-  private Alert pathfindEnabledAlert = new Alert("Console", "PATHFINDING ENABLED", AlertType.INFO);
+  private Alert gyroDisconnectAlert = new Alert("Console", ":: GYRO DISCONNECT", AlertType.ERROR);
+  private Alert pathfindEnabledAlert =
+      new Alert("Console", ":: PATHFINDING ENABLED", AlertType.INFO);
   private Alert debuggingModeEnabledAlert =
-      new Alert("Console", "TUNING MODE ENABLED", AlertType.WARNING);
+      new Alert("Console", ":: TUNING MODE ENABLED", AlertType.WARNING);
 
   public Drive(
       GyroIO gyroIO,
@@ -215,6 +218,12 @@ public class Drive extends SubsystemBase {
 
     // Apply odometry update
     poseEstimator.update(rawGyroRotation, modulePositions);
+
+    // TODO Update accordingly when vision is added
+    TargetingSystem.getInstance()
+        .updateCurrentOdometryPosition(new Pose3d(poseEstimator.getEstimatedPosition()));
+    TargetingSystem.getInstance()
+        .updateCurrentFilteredPosition(new Pose3d(poseEstimator.getEstimatedPosition()));
   }
 
   /**

@@ -6,11 +6,14 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
@@ -30,8 +33,13 @@ public class Shooter extends SubsystemBase {
     INTAKE(() -> Rotation2d.fromDegrees(45.0), () -> 0.0, () -> 0.0),
     TRAVERSAL(() -> Rotation2d.fromDegrees(30.0), () -> 10.0, () -> 10.0),
     CLIMB(() -> Rotation2d.fromDegrees(25.0), () -> 0.0, () -> 0.0),
-    // TODO Replace with targeting system angle when done
-    AIM(() -> Rotation2d.fromDegrees(0.0), () -> 38.0, () -> 38.0),
+    AIM(
+        () ->
+            TargetingSystem.getInstance()
+                .calculateOptimalAngle(
+                    new Pose3d(FieldConstants.Speaker.centerSpeakerOpening, new Rotation3d())),
+        () -> 38.0,
+        () -> 38.0),
     SUBWOOFER(() -> Rotation2d.fromDegrees(57.0), () -> 38.0, () -> 38.0),
     AMP(() -> Rotation2d.fromDegrees(54.0), () -> -4.5, () -> 12.0),
     FEEDER(() -> Rotation2d.fromDegrees(50.0), () -> 30.0, () -> 30.0),
@@ -101,9 +109,9 @@ public class Shooter extends SubsystemBase {
   private ShooterVisualizer visualizer;
 
   private Alert angleEncoderCalibratedSuccessAlert =
-      new Alert("Console", "ANGLER ENCODER CALIBRATION SUCCESSFULL", AlertType.INFO);
+      new Alert("Console", ":: ANGLER ENCODER CALIBRATION SUCCESSFULL", AlertType.INFO);
   private Alert angleEncoderCalibratedFailedAlert =
-      new Alert("Console", "ANGLER ENCODER CALIBRATION FAILED", AlertType.ERROR);
+      new Alert("Console", ":: ANGLER ENCODER CALIBRATION FAILED", AlertType.ERROR);
 
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;

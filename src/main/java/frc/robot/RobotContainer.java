@@ -148,6 +148,7 @@ public class RobotContainer {
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
+
     pilotController
         .b()
         .onTrue(
@@ -157,6 +158,7 @@ public class RobotContainer {
                             new Pose2d(robotDrive.getPose().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true));
+
     pilotController
         .a()
         .whileTrue(
@@ -185,11 +187,9 @@ public class RobotContainer {
 
     pilotController
         .y()
-        .whileTrue(
-            Commands.startEnd(
-                () -> robotShooter.setMotors(ShooterSetpoints.CUSTOM),
-                () -> robotShooter.setMotors(ShooterSetpoints.STOPPED),
-                robotShooter));
+        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM), robotShooter))
+        .whileFalse(
+            Commands.runOnce(() -> robotShooter.setMotors(ShooterSetpoints.HOLD), robotShooter));
 
     pilotController
         .x()
