@@ -21,6 +21,7 @@ import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
 import frc.robot.util.debugging.LoggedTunableNumber;
+import frc.robot.util.math.AllianceFlipUtil;
 import frc.robot.util.math.LinearProfile;
 import frc.robot.util.math.ScrewArmFeedforward;
 import java.util.function.DoubleSupplier;
@@ -32,12 +33,14 @@ public class Shooter extends SubsystemBase {
   public enum ShooterSetpoints {
     INTAKE(() -> Rotation2d.fromDegrees(45.0), () -> 0.0, () -> 0.0),
     TRAVERSAL(() -> Rotation2d.fromDegrees(30.0), () -> 10.0, () -> 10.0),
-    CLIMB(() -> Rotation2d.fromDegrees(25.0), () -> 0.0, () -> 0.0),
+    CLIMB(() -> Rotation2d.fromDegrees(27.0), () -> 0.0, () -> 0.0),
     AIM(
         () ->
             TargetingSystem.getInstance()
                 .calculateOptimalAngle(
-                    new Pose3d(FieldConstants.Speaker.centerSpeakerOpening, new Rotation3d())),
+                    new Pose3d(
+                        AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening),
+                        new Rotation3d())),
         () -> 38.0,
         () -> 38.0),
     SUBWOOFER(() -> Rotation2d.fromDegrees(57.0), () -> 38.0, () -> 38.0),
@@ -49,6 +52,7 @@ public class Shooter extends SubsystemBase {
                 new LoggedTunableNumber("Shooter/Angler/SetpointDebuggingDegrees", 0.0).get()),
         () -> new LoggedTunableNumber("Shooter/Launcher/TopDebuggingMPS", 0.0).get(),
         () -> new LoggedTunableNumber("Shooter/Launcher/BottomDebuggingMPS", 0.0).get()),
+    // HOLD and STOPPED are handled separately in setMotors(), so the setpoints are set to zero
     HOLD(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0),
     STOPPED(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0);
 

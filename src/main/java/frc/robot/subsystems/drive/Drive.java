@@ -367,6 +367,11 @@ public class Drive extends SubsystemBase {
     return poseEstimator.getEstimatedPosition();
   }
 
+  /** Returns the desired chassis speeds that are fed into the setpoint generator */
+  public ChassisSpeeds getDesiredChassisSpeeds() {
+    return desiredChassisSpeeds;
+  }
+
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
     return getPose().getRotation();

@@ -16,8 +16,9 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -44,6 +45,7 @@ import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.ShooterSetpoints;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
 import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
@@ -159,16 +161,34 @@ public class RobotContainer {
                     robotDrive)
                 .ignoringDisable(true));
 
+    // pilotController
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.pathfindToPose(
+    //             robotDrive,
+    //             () ->
+    //                 new Pose2d(
+    //                     AllianceFlipUtil.apply(FieldConstants.ampCenter)
+    //                         .plus(new Translation2d(0.0, -0.5)),
+    //                     Rotation2d.fromDegrees(-90.0))))
+    //     .onFalse(DriveCommands.stopDrive(robotDrive));
     pilotController
         .a()
         .whileTrue(
-            DriveCommands.pathfindToPose(
+            DriveCommands.headignAlign(
                 robotDrive,
+                () -> 0.0,
+                () -> 0.0,
                 () ->
-                    new Pose2d(
-                        AllianceFlipUtil.apply(FieldConstants.ampCenter)
-                            .plus(new Translation2d(0.0, -0.5)),
-                        Rotation2d.fromDegrees(-90.0))))
+                    TargetingSystem.getInstance()
+                        .calculateOptimalHeading(
+                            new Pose3d(
+                                AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening),
+                                new Rotation3d()))
+                        .rotateBy(
+                            Rotation2d.fromDegrees(
+                                180.0)))) // Must add 180 since the back of our robot is where the
+        // shooter is
         .onFalse(DriveCommands.stopDrive(robotDrive));
 
     pilotController
