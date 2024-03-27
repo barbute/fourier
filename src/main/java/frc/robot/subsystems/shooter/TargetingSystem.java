@@ -7,6 +7,7 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.util.Units;
 import org.littletonrobotics.junction.Logger;
@@ -32,9 +33,11 @@ public class TargetingSystem {
 
   private boolean calculateWithVision = true;
 
+  // Debugging data
   private double calculatedDistanceM = 0.0;
   private Rotation2d calculatedAngle = new Rotation2d();
   private Rotation2d calculatedHeading = new Rotation2d();
+  private Pose3d targetPoseAngle = new Pose3d();
 
   /** Returns the Targeting System's instance */
   public static TargetingSystem getInstance() {
@@ -49,6 +52,7 @@ public class TargetingSystem {
     Logger.recordOutput("TargetingSystem/CalculatedDistance", calculatedDistanceM);
     Logger.recordOutput("TargetingSystem/CalculatedAngle", calculatedAngle);
     Logger.recordOutput("TargetingSystem/CalculatedHeading", calculatedHeading);
+    Logger.recordOutput("TargetingSystem/TargetPoseAngler", targetPoseAngle);
   }
 
   /**
@@ -58,17 +62,17 @@ public class TargetingSystem {
   private void initializeLaunchMap() {
     launchMap = new InterpolatingDoubleTreeMap();
 
-    launchMap.put(Units.inchesToMeters(2.0), 55.0);
-    launchMap.put(Units.inchesToMeters(12.0), 53.0);
-    launchMap.put(Units.inchesToMeters(22.0), 52.0);
-    launchMap.put(Units.inchesToMeters(32.0), 49.5);
-    launchMap.put(Units.inchesToMeters(42.0), 47.0);
-    launchMap.put(Units.inchesToMeters(52.0), 44.5);
-    launchMap.put(Units.inchesToMeters(62.0), 42.0);
-    launchMap.put(Units.inchesToMeters(72.0), 40.5);
-    launchMap.put(Units.inchesToMeters(75.0), 40.3);
-    launchMap.put(Units.inchesToMeters(85.0), 39.75);
-    launchMap.put(Units.inchesToMeters(95.0), 38.5);
+    launchMap.put(Units.inchesToMeters(37.0), 55.0);
+    launchMap.put(Units.inchesToMeters(47.0), 53.0);
+    launchMap.put(Units.inchesToMeters(57.0), 52.0);
+    launchMap.put(Units.inchesToMeters(67.0), 49.5);
+    launchMap.put(Units.inchesToMeters(77.0), 47.0);
+    launchMap.put(Units.inchesToMeters(87.0), 44.5);
+    launchMap.put(Units.inchesToMeters(97.0), 42.0);
+    launchMap.put(Units.inchesToMeters(107.0), 40.5);
+    launchMap.put(Units.inchesToMeters(110.0), 40.3);
+    launchMap.put(Units.inchesToMeters(120.0), 39.75);
+    launchMap.put(Units.inchesToMeters(130.0), 38.5);
   }
 
   /**
@@ -98,14 +102,19 @@ public class TargetingSystem {
    */
   public double calculateDistance(Pose3d targetPose) {
     if (calculateWithVision) {
-      calculatedDistanceM =
-          distanceFilter.calculate(
-              targetPose.getTranslation().getDistance(currentFilteredPose.getTranslation()));
+      // Must convert to Translation2d so we only calculate horizontal distance
+      Translation2d currentPose2d =
+          new Translation2d(currentFilteredPose.getX(), currentFilteredPose.getY());
+      Translation2d targetPose2d = new Translation2d(targetPose.getX(), targetPose.getY());
+
+      calculatedDistanceM = distanceFilter.calculate(currentPose2d.getDistance(targetPose2d));
       return calculatedDistanceM;
     } else {
-      calculatedDistanceM =
-          distanceFilter.calculate(
-              targetPose.getTranslation().getDistance(currentOdometryPose.getTranslation()));
+      Translation2d currentPose2d =
+          new Translation2d(currentOdometryPose.getX(), currentOdometryPose.getY());
+      Translation2d targetPose2d = new Translation2d(targetPose.getX(), targetPose.getY());
+
+      calculatedDistanceM = distanceFilter.calculate(currentPose2d.getDistance(targetPose2d));
       return calculatedDistanceM;
     }
   }
@@ -134,6 +143,7 @@ public class TargetingSystem {
     if (launchMap == null) {
       initializeLaunchMap();
     }
+    targetPoseAngle = targetPose;
 
     double distanceM = calculateDistance(targetPose);
     calculatedAngle =

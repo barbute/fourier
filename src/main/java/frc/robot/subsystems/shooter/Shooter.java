@@ -130,7 +130,8 @@ public class Shooter extends SubsystemBase {
         break;
       case SIM:
         anglerFeedback =
-            new ProfiledPIDController(0.1, 0.0, 0.5, new TrapezoidProfile.Constraints(50.0, 50.0));
+            new ProfiledPIDController(
+                0.1, 0.0, 0.3, new TrapezoidProfile.Constraints(800.0, 700.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
         break;
       case REPLAY:
