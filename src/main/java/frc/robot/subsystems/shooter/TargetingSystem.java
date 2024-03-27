@@ -27,9 +27,6 @@ public class TargetingSystem {
 
   private InterpolatingDoubleTreeMap launchMap;
 
-  /** Added to the angle returned by the launch map */
-  private Rotation2d shotCompensationDegrees = new Rotation2d();
-
   /** Filter to stabilize shaky distance estimates */
   private LinearFilter distanceFilter = LinearFilter.movingAverage(10);
 
@@ -168,9 +165,7 @@ public class TargetingSystem {
     targetPoseAngle = targetPose;
 
     double distanceM = calculateDistance(targetPose);
-    calculatedAngle =
-        applyFudgeFactors(
-            Rotation2d.fromDegrees(launchMap.get(distanceM)).plus(shotCompensationDegrees));
+    calculatedAngle = applyFudgeFactors(Rotation2d.fromDegrees(launchMap.get(distanceM)));
 
     return calculatedAngle;
   }
