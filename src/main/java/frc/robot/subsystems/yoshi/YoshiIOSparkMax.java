@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems.yoshi;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-
+import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
@@ -53,7 +52,7 @@ public class YoshiIOSparkMax implements YoshiIO {
     flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
 
-    flywheelMotor.setSmartCurrentLimit(60);
+    flywheelMotor.setSmartCurrentLimit(40);
     flywheelMotor.enableVoltageCompensation(12.0);
     flywheelMotor.setIdleMode(IdleMode.kBrake);
 
@@ -64,7 +63,10 @@ public class YoshiIOSparkMax implements YoshiIO {
 
   @Override
   public void updateInputs(YoshiIOInputs inputs) {
-    inputs.pivotPosition = Rotation2d.fromRotations(pivotAbsoluteEncoder.getAbsolutePosition()).minus(pivotAbsoluteOffset).times(-1.0);
+    inputs.pivotPosition =
+        Rotation2d.fromRotations(pivotAbsoluteEncoder.getAbsolutePosition())
+            .minus(pivotAbsoluteOffset)
+            .times(-1.0);
     inputs.pivotAppliedVolts = pivotMotor.getAppliedOutput() * pivotMotor.getBusVoltage();
     inputs.pivotAppliedCurrentAmps = new double[] {pivotMotor.getOutputCurrent()};
     inputs.pivotTemperatureCelsius = new double[] {pivotMotor.getMotorTemperature()};

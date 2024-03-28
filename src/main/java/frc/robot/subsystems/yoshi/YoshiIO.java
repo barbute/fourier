@@ -4,9 +4,8 @@
 
 package frc.robot.subsystems.yoshi;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface YoshiIO {
   @AutoLog
