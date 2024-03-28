@@ -21,8 +21,8 @@ public interface VisionIO {
     public boolean hasTargetDebounced = false;
     public boolean hasSpeakerTarget = false;
 
-    public double latestTimestamp = 0.0;
-    public double latencySeconds = 0.0;
+    public double latestTimestampS = 0.0;
+    public double latencyS = 0.0;
     public int numberOfTargets = 0;
     public int aprilTagID = 0;
 
@@ -30,17 +30,17 @@ public interface VisionIO {
     public double pitch = 0.0;
     public double area = 0.0;
 
-    public Transform3d cameraToApriltag = new Transform3d();
-    public Transform3d robotToApriltag = new Transform3d();
+    public Transform3d cameraToAprilTag = new Transform3d();
+    public Transform3d robotToAprilTag = new Transform3d();
     public Transform2d speakerTagTransform = new Transform2d();
     public Pose2d speakerTagPose = new Pose2d();
     public Pose2d estimatedRobotPose = new Pose2d();
 
     public double poseAmbiguity = 0.0;
 
-    public double xStandardDeviation = 0.0;
-    public double yStandardDeviation = 0.0;
-    public double thetaStandardDeviation = 0.0;
+    public double xStdDev = 0.0;
+    public double yStdDev = 0.0;
+    public double thetaStdDev = 0.0;
 
     public double speakerXStdDev = 0.0;
     public double speakerYStdDev = 0.0;
