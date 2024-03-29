@@ -22,7 +22,9 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,8 +32,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -92,6 +97,13 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
+  // Used to compare pose estimator and odometry
+  private SwerveDriveOdometry odometry =
+      new SwerveDriveOdometry(KINEMATICS, getRotation(), getModulePositions());
+
+  private LinearFilter xFilter = LinearFilter.movingAverage(5);
+  private LinearFilter yFilter = LinearFilter.movingAverage(5);
+
   private Alert gyroDisconnectAlert = new Alert("Console", "GYRO DISCONNECT", AlertType.ERROR);
   private Alert pathfindEnabledAlert = new Alert("Console", "PATHFINDING ENABLED", AlertType.INFO);
   private Alert debuggingModeEnabledAlert =
@@ -118,7 +130,7 @@ public class Drive extends SubsystemBase {
 
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configureHolonomic(
-        this::getPose,
+        this::getUnfilteredPoseEstimate,
         this::setPose,
         () -> kinematics.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
@@ -217,12 +229,10 @@ public class Drive extends SubsystemBase {
 
     // Apply odometry update
     poseEstimator.update(rawGyroRotation, modulePositions);
+    odometry.update(rawGyroRotation, modulePositions);
 
-    // TODO Update accordingly when vision is added
-    TargetingSystem.getInstance()
-        .updateCurrentOdometryPosition(new Pose3d(poseEstimator.getEstimatedPosition()));
-    TargetingSystem.getInstance()
-        .updateCurrentFilteredPosition(new Pose3d(poseEstimator.getEstimatedPosition()));
+    TargetingSystem.getInstance().updateCurrentOdometryPosition(new Pose3d(getOdometryPose()));
+    TargetingSystem.getInstance().updateCurrentFilteredPosition(new Pose3d(getPoseEstimate()));
   }
 
   /**
@@ -316,8 +326,8 @@ public class Drive extends SubsystemBase {
    * @param visionPose The pose of the robot as measured by the vision camera.
    * @param timestamp The timestamp of the vision measurement in seconds.
    */
-  public void addVisionMeasurement(Pose2d visionPose, double timestamp) {
-    poseEstimator.addVisionMeasurement(visionPose, timestamp);
+  public void addVisionMeasurement(Pose2d visionPose, double timestamp, Matrix<N3, N1> stdDevs) {
+    poseEstimator.addVisionMeasurement(visionPose, timestamp, stdDevs);
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
@@ -360,10 +370,25 @@ public class Drive extends SubsystemBase {
     return states;
   }
 
-  /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Drive/Odometry/Robot")
-  public Pose2d getPose() {
+  /** Returns the current pose estimate with a filter applied */
+  @AutoLogOutput(key = "Drive/Odometry/PoseEstimate")
+  public Pose2d getPoseEstimate() {
+    return new Pose2d(
+        xFilter.calculate(poseEstimator.getEstimatedPosition().getX()),
+        yFilter.calculate(poseEstimator.getEstimatedPosition().getY()),
+        poseEstimator.getEstimatedPosition().getRotation());
+  }
+
+  /** Returns the current pose estimate without a filter applied */
+  @AutoLogOutput(key = "Drive/Odometry/UnfilteredPoseEstimate")
+  public Pose2d getUnfilteredPoseEstimate() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  /** Returns the current odometry pose */
+  @AutoLogOutput(key = "Drive/Odometry/OdometryPose")
+  public Pose2d getOdometryPose() {
+    return odometry.getPoseMeters();
   }
 
   /** Returns the desired chassis speeds that are fed into the setpoint generator */
@@ -371,9 +396,9 @@ public class Drive extends SubsystemBase {
     return desiredChassisSpeeds;
   }
 
-  /** Returns the current odometry rotation. */
+  /** Returns the current odometry rotation - uses pose estimate */
   public Rotation2d getRotation() {
-    return getPose().getRotation();
+    return getPoseEstimate().getRotation();
   }
 
   /** Returns the maximum linear speed in meters per sec. */

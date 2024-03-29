@@ -19,6 +19,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.subsystems.vision.Vision.Camera;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -45,7 +46,7 @@ public class VisionIOPhoton implements VisionIO {
 
   public VisionIOPhoton(Camera polaroid) {
     switch (polaroid) {
-      case LEFT:
+      case FRONT_LEFT_0:
         camera = new PhotonCamera("LLLeft");
         cameraTransform =
             new Transform3d(
@@ -54,7 +55,7 @@ public class VisionIOPhoton implements VisionIO {
                 0.33,
                 new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.5), Math.toRadians(-19.2)));
         break;
-      case RIGHT:
+      case FRONT_RIGHT_1:
         camera = new PhotonCamera("LLRight");
         cameraTransform =
             new Transform3d(
@@ -270,18 +271,5 @@ public class VisionIOPhoton implements VisionIO {
     }
 
     return estStdDevs;
-  }
-
-  public enum Camera {
-    /**
-     * The left limelight camera relative to facing the same direction as the intake-side of the
-     * robot
-     */
-    LEFT,
-    /**
-     * The right limelight camera relative to facing the same direction as the intake-side of the
-     * robot
-     */
-    RIGHT
   }
 }
