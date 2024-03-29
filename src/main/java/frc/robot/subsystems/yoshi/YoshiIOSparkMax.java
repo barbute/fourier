@@ -34,7 +34,7 @@ public class YoshiIOSparkMax implements YoshiIO {
     pivotMotor.enableVoltageCompensation(12.0);
     pivotMotor.setIdleMode(IdleMode.kBrake);
 
-    pivotMotor.setInverted(true);
+    pivotMotor.setInverted(false);
 
     pivotMotor.burnFlash();
 

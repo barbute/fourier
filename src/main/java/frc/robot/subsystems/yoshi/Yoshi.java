@@ -119,7 +119,7 @@ public class Yoshi extends SubsystemBase {
     if (currentPositionSetpoint != null) {
       Rotation2d positionSetpoint =
           Rotation2d.fromDegrees(
-              MathUtil.clamp(currentPositionSetpoint.getDegrees(), -38.0, 110.0));
+              MathUtil.clamp(currentPositionSetpoint.getDegrees(), -49.0, 110.0));
 
       double pivotFeedbackOutput =
           pivotFeedback.calculate(getCurrentPosition().getDegrees(), positionSetpoint.getDegrees());
@@ -128,7 +128,7 @@ public class Yoshi extends SubsystemBase {
               Math.toRadians(pivotFeedback.getSetpoint().position),
               pivotFeedback.getSetpoint().velocity);
 
-      double pivotCombinedOutput = (pivotFeedbackOutput + pivotFeedforwardOutput) * -1.0;
+      double pivotCombinedOutput = (pivotFeedbackOutput + pivotFeedforwardOutput);
 
       yoshiIO.setPivotVolts(pivotCombinedOutput);
     }
@@ -162,8 +162,7 @@ public class Yoshi extends SubsystemBase {
 
   /** Sets the current setpoint to null and sets all motor voltages to 0 */
   public void stopMotors() {
-    // TODO Probs should look into this lmao
-    currentYoshiSetpoint = YoshiSetpoints.HOLD;
+    currentYoshiSetpoint = YoshiSetpoints.STOPPED;
 
     currentPositionSetpoint = null;
     currentFlywheelSetpointVolts = null;
@@ -223,6 +222,6 @@ public class Yoshi extends SubsystemBase {
   /** Returns whether or not the yoshi is at the desired setpoints */
   @AutoLogOutput(key = "Yoshi/AtSetpoint")
   public boolean atSetpoint() {
-    return getPivotErrorDegrees() < 0.1;
+    return pivotFeedback.atGoal();
   }
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Physics sim implementation of YoshiIO */
 public class YoshiIOSim implements YoshiIO {
+  private final double LOOP_PERIOD_SECS = 0.02;
   private final double PIVOT_GEAR_RATIO = (64.0 / 1.0) * (3.0 / 1.0);
   private final double FLYWHEEL_GEAR_RATIO = 5.0 / 1.0;
 
@@ -21,7 +22,7 @@ public class YoshiIOSim implements YoshiIO {
           PIVOT_GEAR_RATIO,
           0.002,
           0.5,
-          Math.toRadians(-30.0),
+          Math.toRadians(-49.0),
           Math.toRadians(120.0),
           true,
           Math.toRadians(90.0));
@@ -33,6 +34,9 @@ public class YoshiIOSim implements YoshiIO {
 
   @Override
   public void updateInputs(YoshiIOInputs inputs) {
+    pivotMotor.update(LOOP_PERIOD_SECS);
+    flywheelMotor.update(LOOP_PERIOD_SECS);
+
     inputs.pivotPosition = Rotation2d.fromRadians(pivotMotor.getAngleRads());
     inputs.pivotAppliedVolts = pivotAppliedVolts;
     inputs.pivotAppliedCurrentAmps = new double[] {pivotMotor.getCurrentDrawAmps()};

@@ -264,7 +264,7 @@ public class Shooter extends SubsystemBase {
 
   /** Sets the current setpoint to null and sets all motor voltages to 0 */
   public void stopMotors() {
-    currentClosedLoopSetpoint = ShooterSetpoints.HOLD;
+    currentClosedLoopSetpoint = ShooterSetpoints.STOPPED;
 
     currentPositionSetpoint = null;
     currentTopFlywheelVelocitySetpointMPS = null;
