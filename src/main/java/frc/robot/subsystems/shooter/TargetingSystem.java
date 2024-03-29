@@ -147,6 +147,7 @@ public class TargetingSystem {
 
   /** Calculate the optimal heading for the robot to shoot at a target */
   public Rotation2d calculateOptimalHeading(Pose3d targetPose) {
+    // TODO Consider switch to pose2d and just use pose3d.toPose2d()
     Pose3d currentPose = (calculateWithVision) ? currentFilteredPose : currentOdometryPose;
 
     double deltaX = targetPose.getX() - currentPose.getX();

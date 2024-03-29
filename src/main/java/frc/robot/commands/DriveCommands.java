@@ -154,7 +154,7 @@ public class DriveCommands {
 
           double thetaDesiredDegrees =
               thetaFeedback.calculate(
-                  robotDrive.getPose().getRotation().getDegrees(),
+                  robotDrive.getPoseEstimate().getRotation().getDegrees(),
                   desiredHeadingSupplier.get().getDegrees());
 
           robotDrive.runVelocity(

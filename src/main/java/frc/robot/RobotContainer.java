@@ -52,6 +52,11 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.subsystems.yoshi.Yoshi;
+import frc.robot.subsystems.yoshi.Yoshi.YoshiSetpoints;
+import frc.robot.subsystems.yoshi.YoshiIO;
+import frc.robot.subsystems.yoshi.YoshiIOSim;
+import frc.robot.subsystems.yoshi.YoshiIOSparkMax;
 import frc.robot.util.math.AllianceFlipUtil;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -66,6 +71,7 @@ public class RobotContainer {
   private Shooter robotShooter;
   private Intake robotIntake;
   private Indexer robotIndexer;
+  private Yoshi robotYoshi;
 
   private final CommandXboxController pilotController = new CommandXboxController(0);
 
@@ -86,6 +92,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotIntake = new Intake(new IntakeIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
+        robotYoshi = new Yoshi(new YoshiIOSparkMax());
         break;
 
       case SIM:
@@ -100,6 +107,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotIntake = new Intake(new IntakeIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
+        robotYoshi = new Yoshi(new YoshiIOSim());
         break;
 
       default:
@@ -114,6 +122,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotIntake = new Intake(new IntakeIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
+        robotYoshi = new Yoshi(new YoshiIO() {});
         break;
     }
 
@@ -157,7 +166,8 @@ public class RobotContainer {
             Commands.runOnce(
                     () ->
                         robotDrive.setPose(
-                            new Pose2d(robotDrive.getPose().getTranslation(), new Rotation2d())),
+                            new Pose2d(
+                                robotDrive.getPoseEstimate().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true));
 
@@ -204,6 +214,14 @@ public class RobotContainer {
                   robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
                 },
                 robotIntake));
+
+    pilotController
+        .rightBumper()
+        .whileTrue(
+            Commands.startEnd(
+                () -> robotYoshi.setMotors(YoshiSetpoints.INTAKE),
+                () -> robotYoshi.setMotors(YoshiSetpoints.IDLE),
+                robotYoshi));
 
     pilotController
         .y()

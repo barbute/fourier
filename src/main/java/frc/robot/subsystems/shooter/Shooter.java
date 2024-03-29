@@ -264,7 +264,7 @@ public class Shooter extends SubsystemBase {
 
   /** Sets the current setpoint to null and sets all motor voltages to 0 */
   public void stopMotors() {
-    currentClosedLoopSetpoint = ShooterSetpoints.HOLD;
+    currentClosedLoopSetpoint = ShooterSetpoints.STOPPED;
 
     currentPositionSetpoint = null;
     currentTopFlywheelVelocitySetpointMPS = null;
@@ -279,11 +279,11 @@ public class Shooter extends SubsystemBase {
   public void setMotors(ShooterSetpoints setpoint) {
     currentClosedLoopSetpoint = setpoint;
 
-    if (setpoint == ShooterSetpoints.HOLD) {
+    if (currentClosedLoopSetpoint == ShooterSetpoints.HOLD) {
       setAnglerPosition(currentPosition);
       setLauncherVelocityMPS(
           currentTopFlywheelVelocitySetpointMPS, currentBottomFlywheelVelocitySetpointMPS);
-    } else if (setpoint == ShooterSetpoints.STOPPED) {
+    } else if (currentClosedLoopSetpoint == ShooterSetpoints.STOPPED) {
       stopMotors();
     } else {
       setAnglerPosition(setpoint.getPosition());
