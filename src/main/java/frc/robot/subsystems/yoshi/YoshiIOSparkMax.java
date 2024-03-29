@@ -13,9 +13,6 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** YoshiIO implementation for two SparkMax motor controllers (NEO 550s) */
 public class YoshiIOSparkMax implements YoshiIO {
-  // private final double PIVOT_GEAR_RATIO = (64.0 / 1.0) * (3.0 / 1.0);
-  // private final double FLYWHEEL_GEAR_RATIO = 5.0 / 1.0;
-
   private CANSparkMax pivotMotor = new CANSparkMax(52, MotorType.kBrushless);
   private CANSparkMax flywheelMotor = new CANSparkMax(53, MotorType.kBrushless);
 

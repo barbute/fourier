@@ -279,11 +279,11 @@ public class Shooter extends SubsystemBase {
   public void setMotors(ShooterSetpoints setpoint) {
     currentClosedLoopSetpoint = setpoint;
 
-    if (setpoint == ShooterSetpoints.HOLD) {
+    if (currentClosedLoopSetpoint == ShooterSetpoints.HOLD) {
       setAnglerPosition(currentPosition);
       setLauncherVelocityMPS(
           currentTopFlywheelVelocitySetpointMPS, currentBottomFlywheelVelocitySetpointMPS);
-    } else if (setpoint == ShooterSetpoints.STOPPED) {
+    } else if (currentClosedLoopSetpoint == ShooterSetpoints.STOPPED) {
       stopMotors();
     } else {
       setAnglerPosition(setpoint.getPosition());
