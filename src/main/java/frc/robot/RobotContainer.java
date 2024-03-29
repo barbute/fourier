@@ -224,8 +224,7 @@ public class RobotContainer {
 
     pilotController
         .y()
-        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM),
-    robotShooter))
+        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM), robotShooter))
         .whileFalse(
             Commands.runOnce(() -> robotShooter.setMotors(ShooterSetpoints.HOLD), robotShooter));
 
