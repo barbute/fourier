@@ -280,9 +280,8 @@ public class Shooter extends SubsystemBase {
     currentClosedLoopSetpoint = setpoint;
 
     if (currentClosedLoopSetpoint == ShooterSetpoints.HOLD) {
-      setAnglerPosition(currentPosition);
-      setLauncherVelocityMPS(
-          currentTopFlywheelVelocitySetpointMPS, currentBottomFlywheelVelocitySetpointMPS);
+      setAnglerPosition(getCurrentPosition());
+      setLauncherVelocityMPS(getTopLauncherVelocityMPS(), getBottomLauncherVelocityMPS());
     } else if (currentClosedLoopSetpoint == ShooterSetpoints.STOPPED) {
       stopMotors();
     } else {
@@ -368,5 +367,15 @@ public class Shooter extends SubsystemBase {
   @AutoLogOutput(key = "Shooter/Launcher/BottomErrorMPS")
   public double getBottomLauncherErrorMPS() {
     return launcherIOInputs.bottomVelocityErrorMPS;
+  }
+
+  /** Returns the angular-velocity of the top flywheel */
+  public double getTopLauncherVelocityMPS() {
+    return launcherIOInputs.topVelocityMPS;
+  }
+
+  /** Returns the angular-velocity of the bottom flywheel */
+  public double getBottomLauncherVelocityMPS() {
+    return launcherIOInputs.bottomVelocityMPS;
   }
 }
