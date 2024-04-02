@@ -66,6 +66,8 @@ public class Yoshi extends SubsystemBase {
   private LoggedTunableNumber pivotFeedbackV;
   private LoggedTunableNumber pivotFeedbackA;
 
+  private YoshiVisualizer visualizer;
+
   public Yoshi(YoshiIO io) {
     yoshiIO = io;
 
@@ -135,6 +137,12 @@ public class Yoshi extends SubsystemBase {
 
     if (currentFlywheelSetpointVolts != null) {
       yoshiIO.setFlywheelVolts(currentFlywheelSetpointVolts);
+    }
+
+    if (visualizer != null) {
+      visualizer.updateYoshiAngle(getCurrentPosition());
+    } else {
+      visualizer = new YoshiVisualizer(getCurrentPosition());
     }
 
     if (Constants.debuggingMode) {

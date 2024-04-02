@@ -240,7 +240,7 @@ public class RobotContainer {
                 robotIntake));
 
     pilotController
-        .rightBumper()
+        .x()
         .whileTrue(
             Commands.startEnd(
                 () -> robotYoshi.setMotors(YoshiSetpoints.INTAKE),
@@ -253,10 +253,11 @@ public class RobotContainer {
         .whileFalse(
             Commands.runOnce(() -> robotShooter.setMotors(ShooterSetpoints.HOLD), robotShooter));
 
-    pilotController
-        .x()
-        .whileTrue(
-            Commands.runOnce(() -> robotIndexer.runIndexer(IndexerSetpoints.STOW), robotIndexer));
+    // pilotController
+    //     .x()
+    //     .whileTrue(
+    //         Commands.runOnce(() -> robotIndexer.runIndexer(IndexerSetpoints.STOW),
+    // robotIndexer));
   }
 
   /**
