@@ -215,7 +215,7 @@ public class RobotContainer {
     //                         .plus(new Translation2d(0.0, -0.5)),
     //                     Rotation2d.fromDegrees(-90.0))))
     //     .onFalse(DriveCommands.stopDrive(robotDrive));
-    
+
     pilotController
         .a()
         .whileTrue(
@@ -259,8 +259,7 @@ public class RobotContainer {
 
     pilotController
         .y()
-        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM),
-    robotShooter))
+        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM), robotShooter))
         .whileFalse(
             Commands.runOnce(() -> robotShooter.setMotors(ShooterSetpoints.HOLD), robotShooter));
 
