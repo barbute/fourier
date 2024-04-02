@@ -17,7 +17,7 @@ public class Intake extends SubsystemBase {
     OUTTAKE(() -> -12.0),
     SPEAKER_SHOOT(() -> 12.0),
     AMP_SHOOT(() -> 12.0),
-    CUSTOM(new LoggedTunableNumber("Intake/VoltageSetpoint", 4.0)),
+    CUSTOM(() -> new LoggedTunableNumber("Intake/VoltageSetpoint", 4.0).get()),
     STOPPED(() -> 0.0);
 
     private DoubleSupplier setpointVolts;

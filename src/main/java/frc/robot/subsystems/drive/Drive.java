@@ -53,15 +53,16 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
-  private static final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.5);
-  private static final double TRACK_WIDTH_X = Units.inchesToMeters(24.25);
+  private static final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(15.5); // 4.72m
+  private static final double TRACK_WIDTH_X = Units.inchesToMeters(24.25); // 0.62m
   private static final double TRACK_WIDTH_Y = Units.inchesToMeters(24.25);
   private static final double DRIVE_BASE_RADIUS =
       Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
-  private static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVE_BASE_RADIUS;
+  private static final double MAX_ANGULAR_SPEED_MPS =
+      MAX_LINEAR_SPEED_MPS / DRIVE_BASE_RADIUS; // 24.0 * Math.PI
   // Second argument is the max accel
   public static final ModuleLimits MODULE_LIMITS =
-      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, MAX_ANGULAR_SPEED_MPS);
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5.0, MAX_ANGULAR_SPEED_MPS);
 
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -193,17 +194,8 @@ public class Drive extends SubsystemBase {
       Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
 
-    if (!gyroInputs.connected) {
-      gyroDisconnectAlert.set(true);
-    } else {
-      gyroDisconnectAlert.set(false);
-    }
-
-    if (Constants.debuggingMode) {
-      debuggingModeEnabledAlert.set(true);
-    } else {
-      debuggingModeEnabledAlert.set(false);
-    }
+    gyroDisconnectAlert.set(!gyroInputs.connected);
+    debuggingModeEnabledAlert.set(Constants.debuggingMode);
 
     // Read wheel positions and deltas from each module
     SwerveModulePosition[] modulePositions = getModulePositions();

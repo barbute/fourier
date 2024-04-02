@@ -18,7 +18,7 @@ public class Indexer extends SubsystemBase {
     OUTTAKE(() -> -12.0),
     SPEAKER_SHOOT(() -> 12.0),
     AMP_SHOOT(() -> 7.0),
-    CUSTOM(new LoggedTunableNumber("Indexer/VoltageSetpoint", 4.0)),
+    CUSTOM(() -> new LoggedTunableNumber("Indexer/VoltageSetpoint", 4.0).get()),
     STOPPED(() -> 0.0);
 
     private DoubleSupplier setpointVolts;
