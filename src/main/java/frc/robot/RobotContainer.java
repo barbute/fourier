@@ -27,6 +27,11 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.Climb.ClimbSetpoints;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -79,6 +84,7 @@ public class RobotContainer {
   private Indexer robotIndexer;
   private Vision robotVision;
   private Yoshi robotYoshi;
+  private Climb robotClimb;
 
   private ArrayList<VisionIO> realVisionIOs = new ArrayList<VisionIO>();
   private ArrayList<VisionIO> simVisionIOs = new ArrayList<VisionIO>();
@@ -109,6 +115,7 @@ public class RobotContainer {
         realVisionIOs.add(new VisionIOPhoton(Camera.FRONT_RIGHT_1));
         robotVision = new Vision(realVisionIOs);
         robotYoshi = new Yoshi(new YoshiIOSparkMax());
+        robotClimb = new Climb(new ClimbIOSparkMax());
         break;
 
       case SIM:
@@ -127,6 +134,7 @@ public class RobotContainer {
         simVisionIOs.add(new VisionIOSim(Camera.FRONT_RIGHT_1, () -> robotDrive.getOdometryPose()));
         robotVision = new Vision(simVisionIOs);
         robotYoshi = new Yoshi(new YoshiIOSim());
+        robotClimb = new Climb(new ClimbIOSim());
         break;
 
       default:
@@ -145,6 +153,7 @@ public class RobotContainer {
         replayVisionIOs.add(new VisionIO() {});
         robotVision = new Vision(replayVisionIOs);
         robotYoshi = new Yoshi(new YoshiIO() {});
+        robotClimb = new Climb(new ClimbIO() {});
         break;
     }
 
@@ -206,6 +215,7 @@ public class RobotContainer {
     //                         .plus(new Translation2d(0.0, -0.5)),
     //                     Rotation2d.fromDegrees(-90.0))))
     //     .onFalse(DriveCommands.stopDrive(robotDrive));
+    
     pilotController
         .a()
         .whileTrue(
@@ -249,9 +259,18 @@ public class RobotContainer {
 
     pilotController
         .y()
-        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM), robotShooter))
+        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM),
+    robotShooter))
         .whileFalse(
             Commands.runOnce(() -> robotShooter.setMotors(ShooterSetpoints.HOLD), robotShooter));
+
+    pilotController
+        .povLeft()
+        .whileTrue(
+            Commands.startEnd(
+                () -> robotClimb.runClimb(ClimbSetpoints.CUSTOM),
+                () -> robotClimb.stop(),
+                robotClimb));
 
     // pilotController
     //     .x()

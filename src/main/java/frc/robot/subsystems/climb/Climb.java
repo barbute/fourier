@@ -6,6 +6,8 @@ package frc.robot.subsystems.climb;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.climb.ClimbVisualizer.ClimbSide;
+import frc.robot.util.debugging.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -14,6 +16,9 @@ public class Climb extends SubsystemBase {
   public enum ClimbSetpoints {
     BOTH_IN(() -> 12.0, () -> 12.0),
     BOTH_OUT(() -> -12.0, () -> -12.0),
+    CUSTOM(
+        () -> new LoggedTunableNumber("Climb/LeftVoltageSetpoint", 4.0).get(),
+        () -> new LoggedTunableNumber("Climb/RightVoltageSetpoint", 4.0).get()),
     STOPPED(() -> 0.0, () -> 0.0);
 
     private DoubleSupplier leftSetpointVolts;
@@ -38,6 +43,9 @@ public class Climb extends SubsystemBase {
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
+  private ClimbVisualizer leftVisualizer = new ClimbVisualizer(ClimbSide.LEFT);
+  private ClimbVisualizer rightVisualizer = new ClimbVisualizer(ClimbSide.RIGHT);
+
   public Climb(ClimbIO io) {
     climbIO = io;
   }
@@ -55,6 +63,9 @@ public class Climb extends SubsystemBase {
       climbIO.setLeftVolts(currentSetpoint.getLeftVolts());
       climbIO.setRightVolts(currentSetpoint.getRightVolts());
     }
+
+    leftVisualizer.updateClimbAngle(climbIOInputs.leftPosition);
+    rightVisualizer.updateClimbAngle(climbIOInputs.rightPosition);
   }
 
   /** Sets the current setpoint to null and sets the volts to 0 */

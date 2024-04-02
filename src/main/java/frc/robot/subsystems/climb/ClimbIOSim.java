@@ -24,7 +24,7 @@ public class ClimbIOSim implements ClimbIO {
           -Math.PI,
           Math.PI,
           true,
-          Math.PI);
+          Math.toRadians(180.0));
   private SingleJointedArmSim rightMotor =
       new SingleJointedArmSim(
           DCMotor.getNEO(1),
@@ -34,7 +34,7 @@ public class ClimbIOSim implements ClimbIO {
           -Math.PI,
           Math.PI,
           true,
-          Math.PI);
+          Math.toRadians(180.0));
 
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
