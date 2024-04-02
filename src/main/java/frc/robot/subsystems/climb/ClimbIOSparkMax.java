@@ -4,17 +4,80 @@
 
 package frc.robot.subsystems.climb;
 
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+import com.revrobotics.CANSparkMax;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+
 /** ClimbIO implementation for SparkMax motor controller (NEO) */
 public class ClimbIOSparkMax implements ClimbIO {
+  private CANSparkMax leftMotor = new CANSparkMax(61, MotorType.kBrushless);
+  private CANSparkMax rightMotor = new CANSparkMax(62, MotorType.kBrushless);
 
-  public ClimbIOSparkMax() {}
+  private DutyCycleEncoder leftAbsoluteEncoder = new DutyCycleEncoder(4);
+  private DutyCycleEncoder rightAbsoluteEncoder = new DutyCycleEncoder(3);
+
+  private Rotation2d leftPositionOffset = Rotation2d.fromDegrees(-302.0);
+  private Rotation2d rightPositionOffset = Rotation2d.fromDegrees(-58.0);
+
+  public ClimbIOSparkMax() {
+    leftMotor.restoreFactoryDefaults();
+    rightMotor.restoreFactoryDefaults();
+    leftMotor.clearFaults();
+    rightMotor.clearFaults();
+
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
+    leftMotor.setSmartCurrentLimit(40);
+    leftMotor.enableVoltageCompensation(12.0);
+    leftMotor.setIdleMode(IdleMode.kBrake);
+    rightMotor.setSmartCurrentLimit(40);
+    rightMotor.enableVoltageCompensation(12.0);
+    rightMotor.setIdleMode(IdleMode.kBrake);
+
+    leftMotor.setInverted(true);
+    rightMotor.setInverted(true);
+
+    leftMotor.burnFlash();
+    rightMotor.burnFlash();
+  }
 
   @Override
-  public void updateInputs(ClimbIOInputs inputs) {}
+  public void updateInputs(ClimbIOInputs inputs) {
+    inputs.leftPosition =
+        Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition())
+            .plus(leftPositionOffset);
+    inputs.leftAppliedVolts = leftMotor.getAppliedOutput() * leftMotor.getBusVoltage();
+    inputs.leftAppliedCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
+    inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
+
+    inputs.rightPosition =
+        Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition())
+            .plus(rightPositionOffset);
+    inputs.rightAppliedVolts = rightMotor.getAppliedOutput() * rightMotor.getBusVoltage();
+    inputs.rightAppliedCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
+    inputs.rightTemperatureCelsius = new double[] {rightMotor.getMotorTemperature()};
+  }
 
   @Override
-  public void setLeftVolts(double volts) {}
+  public void setLeftVolts(double volts) {
+    leftMotor.setVoltage(volts);
+  }
 
   @Override
-  public void setRightVolts(double volts) {}
+  public void setRightVolts(double volts) {
+    rightMotor.setVoltage(volts);
+  }
 }

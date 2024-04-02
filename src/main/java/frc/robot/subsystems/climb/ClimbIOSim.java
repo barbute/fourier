@@ -6,6 +6,8 @@ package frc.robot.subsystems.climb;
 
 /** Physics sim implementation of ClimbIO */
 public class ClimbIOSim implements ClimbIO {
+  private final double GEAR_RATIO = 125.0 / 1.0;
+
   @Override
   public void updateInputs(ClimbIOInputs inputs) {}
 
