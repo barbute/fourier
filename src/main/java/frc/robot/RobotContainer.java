@@ -52,12 +52,18 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.Vision.Camera;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhoton;
+import frc.robot.subsystems.vision.VisionIOSim;
 import frc.robot.subsystems.yoshi.Yoshi;
 import frc.robot.subsystems.yoshi.Yoshi.YoshiSetpoints;
 import frc.robot.subsystems.yoshi.YoshiIO;
 import frc.robot.subsystems.yoshi.YoshiIOSim;
 import frc.robot.subsystems.yoshi.YoshiIOSparkMax;
 import frc.robot.util.math.AllianceFlipUtil;
+import java.util.ArrayList;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -71,7 +77,14 @@ public class RobotContainer {
   private Shooter robotShooter;
   private Intake robotIntake;
   private Indexer robotIndexer;
+  private Vision robotVision;
   private Yoshi robotYoshi;
+
+  private ArrayList<VisionIO> realVisionIOs = new ArrayList<VisionIO>();
+  private ArrayList<VisionIO> simVisionIOs = new ArrayList<VisionIO>();
+  private ArrayList<VisionIO> replayVisionIOs = new ArrayList<VisionIO>();
+
+  private Chassis robotChassis;
 
   private final CommandXboxController pilotController = new CommandXboxController(0);
 
@@ -92,6 +105,9 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotIntake = new Intake(new IntakeIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
+        realVisionIOs.add(new VisionIOPhoton(Camera.FRONT_LEFT_0));
+        realVisionIOs.add(new VisionIOPhoton(Camera.FRONT_RIGHT_1));
+        robotVision = new Vision(realVisionIOs);
         robotYoshi = new Yoshi(new YoshiIOSparkMax());
         break;
 
@@ -107,6 +123,9 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotIntake = new Intake(new IntakeIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
+        simVisionIOs.add(new VisionIOSim(Camera.FRONT_LEFT_0, () -> robotDrive.getOdometryPose()));
+        simVisionIOs.add(new VisionIOSim(Camera.FRONT_RIGHT_1, () -> robotDrive.getOdometryPose()));
+        robotVision = new Vision(simVisionIOs);
         robotYoshi = new Yoshi(new YoshiIOSim());
         break;
 
@@ -122,9 +141,14 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotIntake = new Intake(new IntakeIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
+        replayVisionIOs.add(new VisionIO() {});
+        replayVisionIOs.add(new VisionIO() {});
+        robotVision = new Vision(replayVisionIOs);
         robotYoshi = new Yoshi(new YoshiIO() {});
         break;
     }
+
+    robotChassis = new Chassis(robotDrive, robotVision);
 
     // Set up auto routines
     NamedCommands.registerCommand("Print", new PrintCommand("Hello, world!"));
@@ -242,5 +266,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  /** Returns the Chassis instance to run in robotPeriodic() */
+  public Chassis getChassisInstance() {
+    return robotChassis;
   }
 }

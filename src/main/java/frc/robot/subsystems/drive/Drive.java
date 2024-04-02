@@ -85,7 +85,7 @@ public class Drive extends SubsystemBase {
       new SwerveSetpointGenerator(KINEMATICS, MODULE_TRANSLATIONS);
   private boolean areModulesOrienting = false;
 
-  private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
+  // private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = new Rotation2d();
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
@@ -95,11 +95,11 @@ public class Drive extends SubsystemBase {
         new SwerveModulePosition()
       };
   private SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+      new SwerveDrivePoseEstimator(KINEMATICS, rawGyroRotation, lastModulePositions, new Pose2d());
 
   // Used to compare pose estimator and odometry
   private SwerveDriveOdometry odometry =
-      new SwerveDriveOdometry(KINEMATICS, getRotation(), getModulePositions());
+      new SwerveDriveOdometry(KINEMATICS, rawGyroRotation, lastModulePositions);
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
@@ -130,9 +130,9 @@ public class Drive extends SubsystemBase {
 
     // Configure AutoBuilder for PathPlanner
     AutoBuilder.configureHolonomic(
-        this::getUnfilteredPoseEstimate,
+        this::getOdometryPose,
         this::setPose,
-        () -> kinematics.toChassisSpeeds(getModuleStates()),
+        () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runVelocity,
         new HolonomicPathFollowerConfig(
             new PIDConstants(1.0, 0.0, 0.0),
@@ -223,7 +223,7 @@ public class Drive extends SubsystemBase {
       rawGyroRotation = gyroInputs.yawPosition;
     } else {
       // Use the angle delta from the kinematics and module deltas
-      Twist2d twist = kinematics.toTwist2d(moduleDeltas);
+      Twist2d twist = KINEMATICS.toTwist2d(moduleDeltas);
       rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
     }
 
@@ -311,7 +311,7 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       headings[i] = getModuleTranslations()[i].getAngle();
     }
-    kinematics.resetHeadings(headings);
+    KINEMATICS.resetHeadings(headings);
     stop();
   }
 
@@ -373,10 +373,14 @@ public class Drive extends SubsystemBase {
   /** Returns the current pose estimate with a filter applied */
   @AutoLogOutput(key = "Drive/Odometry/PoseEstimate")
   public Pose2d getPoseEstimate() {
-    return new Pose2d(
-        xFilter.calculate(poseEstimator.getEstimatedPosition().getX()),
-        yFilter.calculate(poseEstimator.getEstimatedPosition().getY()),
-        poseEstimator.getEstimatedPosition().getRotation());
+    if (xFilter == null || yFilter == null) {
+      return poseEstimator.getEstimatedPosition();
+    } else {
+      return new Pose2d(
+          xFilter.calculate(poseEstimator.getEstimatedPosition().getX()),
+          yFilter.calculate(poseEstimator.getEstimatedPosition().getY()),
+          poseEstimator.getEstimatedPosition().getRotation());
+    }
   }
 
   /** Returns the current pose estimate without a filter applied */

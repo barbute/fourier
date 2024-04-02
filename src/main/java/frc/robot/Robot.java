@@ -101,6 +101,8 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
     // Updates the periodic method for Targeting System
     TargetingSystem.getInstance().periodic();
+    // Updates the periodic method for Chassis
+    robotContainer.getChassisInstance().periodic();
   }
 
   /** This function is called once when the robot is disabled. */

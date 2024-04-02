@@ -33,7 +33,7 @@ public class TargetingSystem {
   private Pose3d currentOdometryPose = new Pose3d();
   private Pose3d currentFilteredPose = new Pose3d();
 
-  private boolean calculateWithVision = true;
+  private boolean calculateWithVision = false;
   private boolean useFudgeFactors = false;
 
   // Debugging data
