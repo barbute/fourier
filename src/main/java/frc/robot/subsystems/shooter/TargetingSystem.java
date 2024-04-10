@@ -83,6 +83,13 @@ public class TargetingSystem {
     launchMap.put(Units.inchesToMeters(110.0), 40.3);
     launchMap.put(Units.inchesToMeters(120.0), 39.75);
     launchMap.put(Units.inchesToMeters(130.0), 38.5);
+    launchMap.put(Units.inchesToMeters(140.0), 38.0);
+    launchMap.put(Units.inchesToMeters(150.0), 37.0);
+    launchMap.put(Units.inchesToMeters(160.0), 36.5);
+    launchMap.put(Units.inchesToMeters(170.0), 35.0);
+    launchMap.put(Units.inchesToMeters(180.0), 34.5);
+    launchMap.put(Units.inchesToMeters(190.0), 33.0);
+    launchMap.put(Units.inchesToMeters(200.0), 32.0);
   }
 
   /**
@@ -107,7 +114,7 @@ public class TargetingSystem {
   }
 
   /** Returns the desired value with fudge factors (if applicable) */
-  public double applyFudgeFactors(double x) {
+  private double applyFudgeFactors(double x) {
     if (useFudgeFactors) {
       if (DriverStation.getAlliance().isPresent()
           && DriverStation.getAlliance().get() == Alliance.Red) {
@@ -119,7 +126,7 @@ public class TargetingSystem {
   }
 
   /** Returns the desired value with fudge factors (if applicable) */
-  public Rotation2d applyFudgeFactors(Rotation2d x) {
+  private Rotation2d applyFudgeFactors(Rotation2d x) {
     if (useFudgeFactors) {
       if (DriverStation.getAlliance().isPresent()
           && DriverStation.getAlliance().get() == Alliance.Red) {

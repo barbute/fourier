@@ -180,7 +180,7 @@ public class Yoshi extends SubsystemBase {
   }
 
   /** Set the motors using a pre-defined setpoint */
-  public void setMotors(YoshiSetpoints setpoint) {
+  public void runYoshi(YoshiSetpoints setpoint) {
     currentYoshiSetpoint = setpoint;
 
     if (currentYoshiSetpoint == YoshiSetpoints.HOLD) {

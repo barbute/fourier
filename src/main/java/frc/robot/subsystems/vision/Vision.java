@@ -69,21 +69,8 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < visionIOs.size(); i++) {
       visionIOs.get(i).updateInputs(visionIOInputs.get(i));
-      String logKey = "";
 
-      switch (i) {
-        case 0:
-          logKey = "Vision/FrontLeft";
-          break;
-        case 1:
-          logKey = "Vision/FrontRight";
-          break;
-        default:
-          logKey = "Vision/" + i;
-          break;
-      }
-
-      Logger.processInputs(logKey, visionIOInputs.get(i));
+      Logger.processInputs("Vision/" + i, visionIOInputs.get(i));
     }
 
     if (Constants.debuggingMode) {

@@ -32,7 +32,7 @@ import org.littletonrobotics.junction.Logger;
 public class Shooter extends SubsystemBase {
   public enum ShooterSetpoints {
     INTAKE(() -> Rotation2d.fromDegrees(45.0), () -> 0.0, () -> 0.0),
-    TRAVERSAL(() -> Rotation2d.fromDegrees(30.0), () -> 10.0, () -> 10.0),
+    TRAVERSAL(() -> Rotation2d.fromDegrees(30.0), () -> 0.0, () -> 0.0),
     CLIMB(() -> Rotation2d.fromDegrees(27.0), () -> 0.0, () -> 0.0),
     AIM(
         () ->
@@ -131,7 +131,7 @@ public class Shooter extends SubsystemBase {
       case SIM:
         anglerFeedback =
             new ProfiledPIDController(
-                0.1, 0.0, 0.3, new TrapezoidProfile.Constraints(800.0, 700.0));
+                0.9, 0.0, 0.3, new TrapezoidProfile.Constraints(1600.0, 1600.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
         break;
       case REPLAY:
@@ -276,7 +276,7 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Set the motors using a pre-defined setpoint */
-  public void setMotors(ShooterSetpoints setpoint) {
+  public void runShooter(ShooterSetpoints setpoint) {
     currentClosedLoopSetpoint = setpoint;
 
     if (currentClosedLoopSetpoint == ShooterSetpoints.HOLD) {

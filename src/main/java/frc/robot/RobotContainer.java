@@ -194,88 +194,143 @@ public class RobotContainer {
             () -> -pilotController.getRightX()));
 
     pilotController
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        robotDrive.setPose(
-                            new Pose2d(
-                                robotDrive.getPoseEstimate().getTranslation(), new Rotation2d())),
-                    robotDrive)
-                .ignoringDisable(true));
+        .leftBumper()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOW);
+                  robotShooter.runShooter(ShooterSetpoints.INTAKE);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                  robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
+                },
+                robotIntake,
+                robotIndexer,
+                robotShooter));
 
-    // pilotController
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.pathfindToPose(
-    //             robotDrive,
-    //             () ->
-    //                 new Pose2d(
-    //                     AllianceFlipUtil.apply(FieldConstants.ampCenter)
-    //                         .plus(new Translation2d(0.0, -0.5)),
-    //                     Rotation2d.fromDegrees(-90.0))))
-    //     .onFalse(DriveCommands.stopDrive(robotDrive));
+    pilotController
+        .rightBumper()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                },
+                robotIntake,
+                robotIndexer));
+
+    pilotController
+        .leftTrigger()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
+                  robotYoshi.runYoshi(YoshiSetpoints.INTAKE);
+                  robotShooter.runShooter(ShooterSetpoints.INTAKE);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                  robotYoshi.runYoshi(YoshiSetpoints.IDLE);
+                  robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
+                },
+                robotIntake,
+                robotIndexer,
+                robotYoshi,
+                robotShooter));
+
+    pilotController
+        .rightTrigger()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.OUTTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.OUTTAKE);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                },
+                robotIntake,
+                robotIndexer));
+
+    pilotController
+        .y()
+        .whileTrue(Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.AIM), robotShooter))
+        .whileFalse(
+            Commands.runOnce(
+                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
 
     pilotController
         .a()
         .whileTrue(
-            DriveCommands.headignAlign(
+            DriveCommands.automaticHeading(
                 robotDrive,
-                () -> 0.0,
-                () -> 0.0,
+                () -> -pilotController.getLeftY(),
+                () -> -pilotController.getLeftX(),
                 () ->
                     TargetingSystem.getInstance()
                         .calculateOptimalHeading(
                             new Pose3d(
                                 AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening),
                                 new Rotation3d()))
-                        .rotateBy(
-                            Rotation2d.fromDegrees(
-                                180.0)))) // Must add 180 since the back of our robot is where the
-        // shooter is
+                        .rotateBy(Rotation2d.fromDegrees(180.0))))
         .onFalse(DriveCommands.stopDrive(robotDrive));
 
     pilotController
-        .leftBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  robotIntake.runIntake(IntakeSetpoints.CUSTOM);
-                  robotIndexer.runIndexer(IndexerSetpoints.CUSTOM);
-                },
-                () -> {
-                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
-                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-                },
-                robotIntake));
-
-    pilotController
         .x()
-        .whileTrue(
-            Commands.startEnd(
-                () -> robotYoshi.setMotors(YoshiSetpoints.INTAKE),
-                () -> robotYoshi.setMotors(YoshiSetpoints.IDLE),
-                robotYoshi));
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    robotDrive.setPose(
+                        new Pose2d(
+                            robotDrive.getOdometryPose().getTranslation(), new Rotation2d())),
+                robotDrive));
 
     pilotController
-        .y()
-        .whileTrue(Commands.run(() -> robotShooter.setMotors(ShooterSetpoints.AIM), robotShooter))
+        .b()
+        .whileTrue(Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.AMP), robotShooter))
         .whileFalse(
-            Commands.runOnce(() -> robotShooter.setMotors(ShooterSetpoints.HOLD), robotShooter));
+            Commands.runOnce(
+                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
 
     pilotController
         .povLeft()
         .whileTrue(
             Commands.startEnd(
-                () -> robotClimb.runClimb(ClimbSetpoints.CUSTOM),
-                () -> robotClimb.stop(),
-                robotClimb));
+                () -> {
+                  robotClimb.runClimb(ClimbSetpoints.BOTH_IN);
+                  robotShooter.runShooter(ShooterSetpoints.CLIMB);
+                },
+                () -> {
+                  robotClimb.stopMotors();
+                  robotShooter.runShooter(ShooterSetpoints.HOLD);
+                },
+                robotClimb,
+                robotShooter));
 
-    // pilotController
-    //     .x()
-    //     .whileTrue(
-    //         Commands.runOnce(() -> robotIndexer.runIndexer(IndexerSetpoints.STOW),
-    // robotIndexer));
+    pilotController
+        .povRight()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotClimb.runClimb(ClimbSetpoints.BOTH_OUT);
+                  robotShooter.runShooter(ShooterSetpoints.CLIMB);
+                },
+                () -> {
+                  robotClimb.stopMotors();
+                  robotShooter.runShooter(ShooterSetpoints.HOLD);
+                },
+                robotClimb,
+                robotShooter));
   }
 
   /**

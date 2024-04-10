@@ -140,7 +140,7 @@ public class Drive extends SubsystemBase {
             new PIDConstants(1.0, 0.0, 0.0),
             MAX_LINEAR_SPEED_MPS,
             DRIVE_BASE_RADIUS,
-            new ReplanningConfig(true, true)),
+            new ReplanningConfig(true, false)),
         () ->
             DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red,

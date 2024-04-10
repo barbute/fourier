@@ -56,7 +56,7 @@ public class Climb extends SubsystemBase {
     Logger.processInputs("Climb", climbIOInputs);
 
     if (DriverStation.isDisabled()) {
-      stop();
+      stopMotors();
     }
 
     if (currentSetpoint != null) {
@@ -69,7 +69,7 @@ public class Climb extends SubsystemBase {
   }
 
   /** Sets the current setpoint to null and sets the volts to 0 */
-  public void stop() {
+  public void stopMotors() {
     this.currentSetpoint = null;
 
     climbIO.setLeftVolts(0.0);
