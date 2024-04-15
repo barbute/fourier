@@ -232,7 +232,7 @@ public class RobotContainer {
             Commands.startEnd(
                 () -> {
                   robotIntake.runIntake(IntakeSetpoints.INTAKE);
-                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOW);
                   robotYoshi.runYoshi(YoshiSetpoints.INTAKE);
                   robotShooter.runShooter(ShooterSetpoints.INTAKE);
                 },
