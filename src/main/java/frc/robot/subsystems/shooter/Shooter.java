@@ -52,6 +52,9 @@ public class Shooter extends SubsystemBase {
                 new LoggedTunableNumber("Shooter/Angler/SetpointDebuggingDegrees", 0.0).get()),
         () -> new LoggedTunableNumber("Shooter/Launcher/TopDebuggingMPS", 0.0).get(),
         () -> new LoggedTunableNumber("Shooter/Launcher/BottomDebuggingMPS", 0.0).get()),
+    // MANUAL UP and DOWN are handled separately in setMotors(), so the setpoints are set to zero
+    MANUAL_UP(() -> new Rotation2d(), () -> 0.0, () -> 0.0),
+    MANUAL_DOWN(() -> new Rotation2d(), () -> 0.0, () -> 0.0),
     // HOLD and STOPPED are handled separately in setMotors(), so the setpoints are set to zero
     HOLD(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0),
     STOPPED(() -> Rotation2d.fromDegrees(0.0), () -> 0.0, () -> 0.0);
@@ -284,6 +287,16 @@ public class Shooter extends SubsystemBase {
       setLauncherVelocityMPS(getTopLauncherVelocityMPS(), getBottomLauncherVelocityMPS());
     } else if (currentClosedLoopSetpoint == ShooterSetpoints.STOPPED) {
       stopMotors();
+    } else if (currentClosedLoopSetpoint == ShooterSetpoints.MANUAL_UP) {
+      currentPositionSetpoint = null;
+      currentTopFlywheelVelocitySetpointMPS = null;
+      currentBottomFlywheelVelocitySetpointMPS = null;
+      anglerIO.setVolts(9.0);
+    } else if (currentClosedLoopSetpoint == ShooterSetpoints.MANUAL_DOWN) {
+      currentPositionSetpoint = null;
+      currentTopFlywheelVelocitySetpointMPS = null;
+      currentBottomFlywheelVelocitySetpointMPS = null;
+      anglerIO.setVolts(-9.0);
     } else {
       setAnglerPosition(setpoint.getPosition());
       setLauncherVelocityMPS(setpoint.getTopVelocityMPS(), setpoint.getBottomVelocityMPS());

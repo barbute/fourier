@@ -303,6 +303,30 @@ public class RobotContainer {
                 () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
 
     pilotController
+        .povUp()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.MANUAL_UP);
+                },
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
+                },
+                robotShooter));
+
+    pilotController
+        .povDown()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.MANUAL_DOWN);
+                },
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
+                },
+                robotShooter));
+
+    pilotController
         .povLeft()
         .whileTrue(
             Commands.startEnd(
