@@ -33,6 +33,7 @@ import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
 // import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.Drive.DriveState;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -188,12 +189,12 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    robotDrive.acceptTeleroperatedInputs(
+        () -> -pilotController.getLeftY(),
+        () -> -pilotController.getLeftX(),
+        () -> -pilotController.getRightX());
     robotDrive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            robotDrive,
-            () -> -pilotController.getLeftY(),
-            () -> -pilotController.getLeftX(),
-            () -> -pilotController.getRightX()));
+        Commands.run(() -> robotDrive.setDriveState(DriveState.TELEOPERATED), robotDrive));
 
     pilotController
         .leftBumper()
@@ -359,9 +360,9 @@ public class RobotContainer {
     //             robotShooter));
     pilotController
         .povRight()
-        .whileTrue(Commands.run(() -> robotDrive.runSimpleCharacterization(1.0), robotDrive))
+        .whileTrue(Commands.run(() -> robotDrive.setDriveState(DriveState.SIMPLECHARACTERIZATION)))
         .onFalse(
-            Commands.runOnce(() -> robotDrive.stop(), robotDrive)
+            Commands.runOnce(() -> robotDrive.setDriveState(DriveState.STOPPED), robotDrive)
                 .alongWith(
                     Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0), robotDrive)));
   }
