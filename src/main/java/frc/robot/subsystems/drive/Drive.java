@@ -118,6 +118,8 @@ public class Drive extends SubsystemBase {
   private SwerveDriveOdometry odometry =
       new SwerveDriveOdometry(KINEMATICS, rawGyroRotation, lastModulePositions);
 
+  private DriveState driveState = DriveState.STOPPED;
+
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
@@ -240,6 +242,17 @@ public class Drive extends SubsystemBase {
 
     TargetingSystem.getInstance().updateCurrentOdometryPosition(new Pose3d(getOdometryPose()));
     TargetingSystem.getInstance().updateCurrentFilteredPosition(new Pose3d(getPoseEstimate()));
+  }
+
+  /**
+   * Sets the subsystem's desired state, logic runs in periodic()
+   *
+   * @param desiredState The desired state
+   */
+  public void setDriveState(DriveState desiredState) {
+    driveState = desiredState;
+    // TODO: Add logic to reset the heading controller when I make that if the state is the heading
+    // controller
   }
 
   /**
