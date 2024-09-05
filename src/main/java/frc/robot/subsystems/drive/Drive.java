@@ -53,6 +53,22 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
+  /** All possible states the drive subsystem can be in */
+  public enum DriveState {
+    /** Driving with input from driver controllers */
+    TELEOPERATED,
+    /** Driving based on a preplanned trajectory */
+    TRAJECTORY,
+    /** Driving to a location on a field automatically */
+    AUTOALIGN,
+    /** Characterizing */
+    CHARACTERIZATION,
+    /** Only runs drive volts, kV = voltage / velocity; sets the drive volts to 1.0 */
+    SIMPLECHARACTERIZATION,
+    /** Drivetrain is commanded to do nothing */
+    STOPPED
+  }
+
   private static final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(15.5); // 4.72m
   private static final double TRACK_WIDTH_X = Units.inchesToMeters(24.25); // 0.62m
   private static final double TRACK_WIDTH_Y = Units.inchesToMeters(24.25);
