@@ -363,7 +363,7 @@ public class RobotContainer {
         .whileTrue(Commands.run(() -> robotDrive.setDriveState(DriveState.SIMPLECHARACTERIZATION)))
         .onFalse(
             Commands.runOnce(() -> robotDrive.setDriveState(DriveState.STOPPED), robotDrive)
-                .alongWith(
+                .andThen(
                     Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0), robotDrive)));
   }
 
