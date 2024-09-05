@@ -123,6 +123,9 @@ public class Drive extends SubsystemBase {
   private TeleoperatedController teleoperatedController = null;
   private DriveState driveState = DriveState.STOPPED;
 
+  /** The currently desired chassis speeds */
+  private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
@@ -245,6 +248,42 @@ public class Drive extends SubsystemBase {
 
     TargetingSystem.getInstance().updateCurrentOdometryPosition(new Pose3d(getOdometryPose()));
     TargetingSystem.getInstance().updateCurrentFilteredPosition(new Pose3d(getPoseEstimate()));
+
+    // Set desired speeds and run desired actions based on the current commanded stated of the drive
+    switch (driveState) {
+      case TELEOPERATED:
+        if (teleoperatedController != null) {
+          desiredSpeeds =
+              teleoperatedController.computeChassisSpeeds(
+                  poseEstimator.getEstimatedPosition().getRotation(),
+                  KINEMATICS.toChassisSpeeds(getModuleStates()),
+                  MAX_LINEAR_SPEED_MPS,
+                  MAX_ANGULAR_SPEED_MPS);
+        }
+        break;
+      case TRAJECTORY:
+        break;
+      case AUTOALIGN:
+        break;
+      case CHARACTERIZATION:
+        desiredSpeeds = null;
+        break;
+      case SIMPLECHARACTERIZATION:
+        desiredSpeeds = null;
+        runSimpleCharacterization(1.0);
+        break;
+      case STOPPED:
+        desiredSpeeds = null;
+        stop();
+        break;
+      default:
+        desiredSpeeds = null;
+        break;
+    }
+
+    if (desiredSpeeds != null) {
+      runVelocity(desiredSpeeds);
+    }
   }
 
   /**
