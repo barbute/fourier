@@ -343,20 +343,27 @@ public class RobotContainer {
                 robotClimb,
                 robotShooter));
 
+    // pilotController
+    //     .povRight()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> {
+    //               robotClimb.runClimb(ClimbSetpoints.BOTH_OUT);
+    //               robotShooter.runShooter(ShooterSetpoints.CLIMB);
+    //             },
+    //             () -> {
+    //               robotClimb.stopMotors();
+    //               robotShooter.runShooter(ShooterSetpoints.HOLD);
+    //             },
+    //             robotClimb,
+    //             robotShooter));
     pilotController
         .povRight()
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  robotClimb.runClimb(ClimbSetpoints.BOTH_OUT);
-                  robotShooter.runShooter(ShooterSetpoints.CLIMB);
-                },
-                () -> {
-                  robotClimb.stopMotors();
-                  robotShooter.runShooter(ShooterSetpoints.HOLD);
-                },
-                robotClimb,
-                robotShooter));
+        .whileTrue(Commands.run(() -> robotDrive.runSimpleCharacterization(1.0), robotDrive))
+        .onFalse(
+            Commands.runOnce(() -> robotDrive.stop(), robotDrive)
+                .alongWith(
+                    Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0), robotDrive)));
   }
 
   /**

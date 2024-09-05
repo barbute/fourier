@@ -288,6 +288,18 @@ public class Drive extends SubsystemBase {
     return new ChassisSpeeds((twist.dx / dt), (twist.dy / dt), (speeds.omegaRadiansPerSecond));
   }
 
+  /**
+   * Runs the drive motors (locked forward) with the applied voltage. Remember that kV for drive is
+   * Voltage / Velocity
+   *
+   * @param volts Voltage to run the drive motors at
+   */
+  public void runSimpleCharacterization(double volts) {
+    for (Module mod : modules) {
+      mod.runCharacterization(volts);
+    }
+  }
+
   /** Stops the drive. */
   public void stop() {
     runVelocity(new ChassisSpeeds());
