@@ -45,9 +45,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.controllers.TeleoperatedController;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -118,6 +120,7 @@ public class Drive extends SubsystemBase {
   private SwerveDriveOdometry odometry =
       new SwerveDriveOdometry(KINEMATICS, rawGyroRotation, lastModulePositions);
 
+  private TeleoperatedController teleoperatedController = null;
   private DriveState driveState = DriveState.STOPPED;
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
@@ -332,6 +335,18 @@ public class Drive extends SubsystemBase {
   /** Stops the drive. */
   public void stop() {
     runVelocity(new ChassisSpeeds());
+  }
+
+  /**
+   * Accept the joystick input from the controllers
+   *
+   * @param xSupplier Forward-backward input
+   * @param ySupplier Left-right input
+   * @param thetaSupplier Rotational input
+   */
+  public void acceptTeleroperatedInputs(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier thetaSupplier) {
+    teleoperatedController = new TeleoperatedController(xSupplier, ySupplier, thetaSupplier);
   }
 
   /**
