@@ -45,14 +45,32 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.controllers.TeleoperatedController;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
+  /** All possible states the drive subsystem can be in */
+  public enum DriveState {
+    /** Driving with input from driver controllers */
+    TELEOPERATED,
+    /** Driving based on a preplanned trajectory */
+    TRAJECTORY,
+    /** Driving to a location on a field automatically */
+    AUTOALIGN,
+    /** Characterizing */
+    CHARACTERIZATION,
+    /** Only runs drive volts, kV = voltage / velocity; sets the drive volts to 1.0 */
+    SIMPLECHARACTERIZATION,
+    /** Drivetrain is commanded to do nothing */
+    STOPPED
+  }
+
   private static final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(15.5); // 4.72m
   private static final double TRACK_WIDTH_X = Units.inchesToMeters(24.25); // 0.62m
   private static final double TRACK_WIDTH_Y = Units.inchesToMeters(24.25);
@@ -101,6 +119,12 @@ public class Drive extends SubsystemBase {
   // Used to compare pose estimator and odometry
   private SwerveDriveOdometry odometry =
       new SwerveDriveOdometry(KINEMATICS, rawGyroRotation, lastModulePositions);
+
+  private TeleoperatedController teleoperatedController = null;
+  private DriveState driveState = DriveState.STOPPED;
+
+  /** The currently desired chassis speeds */
+  private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
@@ -224,6 +248,53 @@ public class Drive extends SubsystemBase {
 
     TargetingSystem.getInstance().updateCurrentOdometryPosition(new Pose3d(getOdometryPose()));
     TargetingSystem.getInstance().updateCurrentFilteredPosition(new Pose3d(getPoseEstimate()));
+
+    // Set desired speeds and run desired actions based on the current commanded stated of the drive
+    switch (driveState) {
+      case TELEOPERATED:
+        if (teleoperatedController != null) {
+          desiredSpeeds =
+              teleoperatedController.computeChassisSpeeds(
+                  poseEstimator.getEstimatedPosition().getRotation(),
+                  KINEMATICS.toChassisSpeeds(getModuleStates()),
+                  MAX_LINEAR_SPEED_MPS,
+                  MAX_ANGULAR_SPEED_MPS);
+        }
+        break;
+      case TRAJECTORY:
+        break;
+      case AUTOALIGN:
+        break;
+      case CHARACTERIZATION:
+        desiredSpeeds = null;
+        break;
+      case SIMPLECHARACTERIZATION:
+        desiredSpeeds = null;
+        runSimpleCharacterization(1.0);
+        break;
+      case STOPPED:
+        desiredSpeeds = null;
+        stop();
+        break;
+      default:
+        desiredSpeeds = null;
+        break;
+    }
+
+    if (desiredSpeeds != null) {
+      runVelocity(desiredSpeeds);
+    }
+  }
+
+  /**
+   * Sets the subsystem's desired state, logic runs in periodic()
+   *
+   * @param desiredState The desired state
+   */
+  public void setDriveState(DriveState desiredState) {
+    driveState = desiredState;
+    // TODO: Add logic to reset the heading controller when I make that if the state is the heading
+    // controller
   }
 
   /**
@@ -303,6 +374,18 @@ public class Drive extends SubsystemBase {
   /** Stops the drive. */
   public void stop() {
     runVelocity(new ChassisSpeeds());
+  }
+
+  /**
+   * Accept the joystick input from the controllers
+   *
+   * @param xSupplier Forward-backward input
+   * @param ySupplier Left-right input
+   * @param thetaSupplier Rotational input
+   */
+  public void acceptTeleroperatedInputs(
+      DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier thetaSupplier) {
+    teleoperatedController = new TeleoperatedController(xSupplier, ySupplier, thetaSupplier);
   }
 
   /**
