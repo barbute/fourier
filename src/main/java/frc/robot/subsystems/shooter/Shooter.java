@@ -222,7 +222,13 @@ public class Shooter extends SubsystemBase {
 
       double anglerCombinedOutput = anglerFeedbackOutput + anglerFeedforwardOutput;
 
-      anglerIO.setVolts(anglerCombinedOutput);
+      // Stop running PID if we're already at the setpoint
+      if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+          < anglerFeedback.getPositionTolerance())) {
+        anglerIO.setVolts(anglerCombinedOutput);
+      } else {
+        anglerIO.setVolts(0.0);
+      }
     }
 
     if (currentTopFlywheelVelocitySetpointMPS != null) {
