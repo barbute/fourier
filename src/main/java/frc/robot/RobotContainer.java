@@ -31,6 +31,7 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.Climb.ClimbSetpoints;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOSparkMax;
 // import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.Drive.DriveState;
@@ -116,9 +117,9 @@ public class RobotContainer {
         realVisionIOs.add(new VisionIOPhoton(Camera.FRONT_RIGHT_1));
         robotVision = new Vision(realVisionIOs);
         // robotYoshi = new Yoshi(new YoshiIOSparkMax());
-        // robotClimb = new Climb(new ClimbIOSparkMax());
+        robotClimb = new Climb(new ClimbIOSparkMax());
         robotYoshi = new Yoshi(new YoshiIO() {});
-        robotClimb = new Climb(new ClimbIO() {});
+        // robotClimb = new Climb(new ClimbIO() {});
         break;
 
       case SIM:
@@ -344,27 +345,30 @@ public class RobotContainer {
                 robotClimb,
                 robotShooter));
 
-    // pilotController
-    //     .povRight()
-    //     .whileTrue(
-    //         Commands.startEnd(
-    //             () -> {
-    //               robotClimb.runClimb(ClimbSetpoints.BOTH_OUT);
-    //               robotShooter.runShooter(ShooterSetpoints.CLIMB);
-    //             },
-    //             () -> {
-    //               robotClimb.stopMotors();
-    //               robotShooter.runShooter(ShooterSetpoints.HOLD);
-    //             },
-    //             robotClimb,
-    //             robotShooter));
     pilotController
         .povRight()
-        .whileTrue(Commands.run(() -> robotDrive.setDriveState(DriveState.SIMPLECHARACTERIZATION)))
-        .onFalse(
-            Commands.runOnce(() -> robotDrive.setDriveState(DriveState.STOPPED), robotDrive)
-                .andThen(
-                    Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0), robotDrive)));
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotClimb.runClimb(ClimbSetpoints.CUSTOM);
+                  // robotShooter.runShooter(ShooterSetpoints.CLIMB);
+                },
+                () -> {
+                  robotClimb.stopMotors();
+                  // robotShooter.runShooter(ShooterSetpoints.HOLD);
+                },
+                robotClimb,
+                robotShooter));
+
+    // pilotController
+    //     .povRight()
+    //     .whileTrue(Commands.run(() ->
+    // robotDrive.setDriveState(DriveState.SIMPLECHARACTERIZATION)))
+    //     .onFalse(
+    //         Commands.runOnce(() -> robotDrive.setDriveState(DriveState.STOPPED), robotDrive)
+    //             .andThen(
+    //                 Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0),
+    // robotDrive)));
   }
 
   /**

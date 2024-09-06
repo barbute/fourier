@@ -17,8 +17,8 @@ public class Climb extends SubsystemBase {
     BOTH_IN(() -> 12.0, () -> 12.0),
     BOTH_OUT(() -> -12.0, () -> -12.0),
     CUSTOM(
-        () -> new LoggedTunableNumber("Climb/LeftVoltageSetpoint", 4.0).get(),
-        () -> new LoggedTunableNumber("Climb/RightVoltageSetpoint", 4.0).get()),
+        () -> new LoggedTunableNumber("Climb/LeftVoltageSetpoint", 1.0).get(),
+        () -> new LoggedTunableNumber("Climb/RightVoltageSetpoint", 1.0).get()),
     STOPPED(() -> 0.0, () -> 0.0);
 
     private DoubleSupplier leftSetpointVolts;
