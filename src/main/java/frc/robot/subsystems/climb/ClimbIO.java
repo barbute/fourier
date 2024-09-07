@@ -11,11 +11,13 @@ public interface ClimbIO {
   @AutoLog
   public static class ClimbIOInputs {
     public Rotation2d leftPosition = new Rotation2d();
+    public double leftPositionMeters = 0.0;
     public double leftAppliedVolts = 0.0;
     public double[] leftAppliedCurrentAmps = new double[] {0.0};
     public double[] leftTemperatureCelsius = new double[] {0.0};
 
     public Rotation2d rightPosition = new Rotation2d();
+    public double rightPositionMeters = 0.0;
     public double rightAppliedVolts = 0.0;
     public double[] rightAppliedCurrentAmps = new double[] {0.0};
     public double[] rightTemperatureCelsius = new double[] {0.0};
