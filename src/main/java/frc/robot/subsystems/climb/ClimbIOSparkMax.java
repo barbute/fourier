@@ -16,11 +16,11 @@ public class ClimbIOSparkMax implements ClimbIO {
   private CANSparkMax leftMotor = new CANSparkMax(61, MotorType.kBrushless);
   private CANSparkMax rightMotor = new CANSparkMax(62, MotorType.kBrushless);
 
-  private DutyCycleEncoder leftAbsoluteEncoder = new DutyCycleEncoder(4);
-  private DutyCycleEncoder rightAbsoluteEncoder = new DutyCycleEncoder(3);
+  private DutyCycleEncoder leftAbsoluteEncoder = new DutyCycleEncoder(1);
+  private DutyCycleEncoder rightAbsoluteEncoder = new DutyCycleEncoder(4);
 
-  private Rotation2d leftPositionOffset = Rotation2d.fromDegrees(-302.0);
-  private Rotation2d rightPositionOffset = Rotation2d.fromDegrees(-58.0);
+  private Rotation2d leftPositionOffset = Rotation2d.fromDegrees(0.0);
+  private Rotation2d rightPositionOffset = Rotation2d.fromDegrees(0.0);
 
   public ClimbIOSparkMax() {
     leftMotor.restoreFactoryDefaults();
