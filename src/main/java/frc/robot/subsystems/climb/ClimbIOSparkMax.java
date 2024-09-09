@@ -58,7 +58,9 @@ public class ClimbIOSparkMax implements ClimbIO {
     leftMotor.setInverted(true);
     rightMotor.setInverted(true);
 
-    leftAbsoluteEncoder.setDistancePerRotation(0.0477); // Meters
+    // leftAbsoluteEncoder.setDistancePerRotation(0.0477); // Meters
+    // leftAbsoluteEncoder.reset();
+    // leftAbsoluteEncoder.setPositionOffset(0.70471);
 
     leftMotor.burnFlash();
     rightMotor.burnFlash();
@@ -77,6 +79,8 @@ public class ClimbIOSparkMax implements ClimbIO {
     inputs.rightPosition =
         Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition())
             .plus(rightPositionOffset);
+    inputs.rightPositionMeters =
+        rightAbsoluteEncoder.getDistance() + rightLinearPositionOffsetMeters;
     inputs.rightAppliedVolts = rightMotor.getAppliedOutput() * rightMotor.getBusVoltage();
     inputs.rightAppliedCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
     inputs.rightTemperatureCelsius = new double[] {rightMotor.getMotorTemperature()};
