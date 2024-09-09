@@ -24,10 +24,10 @@ public class ClimbIOSparkMax implements ClimbIO {
 
   // 2 1/4 in per rotation
 
-  private Rotation2d leftPositionOffset = Rotation2d.fromDegrees(0.0);
-  private Rotation2d rightPositionOffset = Rotation2d.fromDegrees(0.0);
+  private Rotation2d leftPositionOffset = Rotation2d.fromRadians(-0.759);
+  private Rotation2d rightPositionOffset = Rotation2d.fromRadians(0.659);
 
-  private double leftLinearPositionOffsetMeters = 0.0; // 0.0574;
+  private double leftLinearPositionOffsetMeters = 0.145; // 0.0574;
   private double rightLinearPositionOffsetMeters = 0.0;
 
   public ClimbIOSparkMax() {
@@ -61,6 +61,11 @@ public class ClimbIOSparkMax implements ClimbIO {
     // leftAbsoluteEncoder.setDistancePerRotation(0.0477); // Meters
     // leftAbsoluteEncoder.reset();
     // leftAbsoluteEncoder.setPositionOffset(0.70471);
+    // leftAbsoluteEncoder.reset();
+    // rightAbsoluteEncoder.reset();
+
+    leftAbsoluteEncoder.setDistancePerRotation(1.0 / 6.0);
+    rightAbsoluteEncoder.setDistancePerRotation(1.0 / 6.0);
 
     leftMotor.burnFlash();
     rightMotor.burnFlash();
@@ -70,17 +75,17 @@ public class ClimbIOSparkMax implements ClimbIO {
   public void updateInputs(ClimbIOInputs inputs) {
     inputs.leftPosition =
         Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition())
-            .plus(leftPositionOffset);
-    inputs.leftPositionMeters = leftAbsoluteEncoder.getDistance() + leftLinearPositionOffsetMeters;
+            .minus(leftPositionOffset);
+    inputs.leftPositionMeters = leftAbsoluteEncoder.getDistance() - leftLinearPositionOffsetMeters;
     inputs.leftAppliedVolts = leftMotor.getAppliedOutput() * leftMotor.getBusVoltage();
     inputs.leftAppliedCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
 
     inputs.rightPosition =
         Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition())
-            .plus(rightPositionOffset);
+            .minus(rightPositionOffset);
     inputs.rightPositionMeters =
-        rightAbsoluteEncoder.getDistance() + rightLinearPositionOffsetMeters;
+        rightAbsoluteEncoder.getDistance() - rightLinearPositionOffsetMeters;
     inputs.rightAppliedVolts = rightMotor.getAppliedOutput() * rightMotor.getBusVoltage();
     inputs.rightAppliedCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
     inputs.rightTemperatureCelsius = new double[] {rightMotor.getMotorTemperature()};

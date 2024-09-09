@@ -43,7 +43,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.controllers.TeleoperatedController;
 import frc.robot.subsystems.shooter.TargetingSystem;
@@ -184,9 +186,10 @@ public class Drive extends SubsystemBase {
     sysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
-                null,
-                null,
-                null,
+                edu.wpi.first.units.Units.Volts.of(1.0)
+                    .per(edu.wpi.first.units.Units.Seconds.of(1.0)),
+                edu.wpi.first.units.Units.Volts.of(3.0),
+                edu.wpi.first.units.Units.Seconds.of(5.0),
                 (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> {
@@ -425,6 +428,18 @@ public class Drive extends SubsystemBase {
   /** Returns a command to run a dynamic test in the specified direction. */
   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
     return sysId.dynamic(direction);
+  }
+
+  public Command runAllCharacterization() {
+    return Commands.sequence(
+        sysIdQuasistatic(Direction.kForward),
+        new WaitCommand(2.0),
+        sysIdQuasistatic(Direction.kReverse),
+        new WaitCommand(2.0),
+        sysIdDynamic(Direction.kForward),
+        new WaitCommand(2.0),
+        sysIdDynamic(Direction.kReverse),
+        new WaitCommand(2.0));
   }
 
   /** Returns a command to pathfind to a position */
