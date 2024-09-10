@@ -44,28 +44,28 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
         azimuthAbsoluteEncoder = new CANcoder(31, "CTREBUS");
 
-        absoluteEncoderOffset = Rotation2d.fromRotations(0.0);
+        absoluteEncoderOffset = Rotation2d.fromDegrees(-15.86);
         break;
       case 1:
         driveMotor = new CANSparkMax(12, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
         azimuthAbsoluteEncoder = new CANcoder(32, "CTREBUS");
 
-        absoluteEncoderOffset = Rotation2d.fromRotations(0.0);
+        absoluteEncoderOffset = Rotation2d.fromDegrees(-15.61);
         break;
       case 2:
         driveMotor = new CANSparkMax(13, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
         azimuthAbsoluteEncoder = new CANcoder(33, "CTREBUS");
 
-        absoluteEncoderOffset = Rotation2d.fromRotations(0.0);
+        absoluteEncoderOffset = Rotation2d.fromDegrees(-23.1);
         break;
       case 3:
         driveMotor = new CANSparkMax(14, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
         azimuthAbsoluteEncoder = new CANcoder(34, "CTREBUS");
 
-        absoluteEncoderOffset = Rotation2d.fromRotations(0.0);
+        absoluteEncoderOffset = Rotation2d.fromDegrees(22.17);
         break;
       default:
         throw new RuntimeException("Invalid module index");

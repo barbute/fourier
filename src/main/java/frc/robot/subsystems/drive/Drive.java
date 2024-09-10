@@ -273,7 +273,7 @@ public class Drive extends SubsystemBase {
         break;
       case SIMPLECHARACTERIZATION:
         desiredSpeeds = null;
-        runSimpleCharacterization(3.0);
+        runSimpleCharacterization(5.0);
         break;
       case STOPPED:
         desiredSpeeds = null;
