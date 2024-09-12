@@ -20,8 +20,8 @@ public class LauncherIOTalonFX implements LauncherIO {
   private final double RADIUS_M = 6.35 / 100;
   private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
 
-  private TalonFX topMotor = new TalonFX(43, "CTREBUS");
-  private TalonFX bottomMotor = new TalonFX(44, "CTREBUS");
+  private TalonFX topMotor = new TalonFX(43);
+  private TalonFX bottomMotor = new TalonFX(44);
 
   private TalonFXConfiguration topConfiguration = new TalonFXConfiguration();
   private TalonFXConfiguration bottomConfiguration = new TalonFXConfiguration();
