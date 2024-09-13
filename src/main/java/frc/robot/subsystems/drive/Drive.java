@@ -273,7 +273,7 @@ public class Drive extends SubsystemBase {
         break;
       case SIMPLECHARACTERIZATION:
         desiredSpeeds = null;
-        runSimpleCharacterization(5.0);
+        runSimpleCharacterization(1.5);
         break;
       case STOPPED:
         desiredSpeeds = null;
@@ -497,10 +497,10 @@ public class Drive extends SubsystemBase {
     return odometry.getPoseMeters();
   }
 
-  /** Returns the desired chassis speeds that are fed into the setpoint generator */
-  public ChassisSpeeds getDesiredChassisSpeeds() {
-    return desiredChassisSpeeds;
-  }
+  // /** Returns the desired chassis speeds that are fed into the setpoint generator */
+  // public ChassisSpeeds getDesiredChassisSpeeds() {
+  //   return desiredChassisSpeeds;
+  // }
 
   /** Returns the current odometry rotation - uses pose estimate */
   public Rotation2d getRotation() {

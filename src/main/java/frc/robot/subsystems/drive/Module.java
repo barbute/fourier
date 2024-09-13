@@ -23,7 +23,7 @@ import frc.robot.util.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
-  private static final double WHEEL_RADIUS_METERS = 2.0 * Math.PI * (5.08 / 100);
+  private static final double WHEEL_CIRCUMFRENCE_METERS = 2.0 * Math.PI * (5.08 / 100);
 
   private final ModuleIO moduleIO;
   private final ModuleIOInputsAutoLogged moduleIOInputs = new ModuleIOInputsAutoLogged();
@@ -53,9 +53,9 @@ public class Module {
     // separate robot with different tuning)
     switch (Constants.currentMode) {
       case REAL:
-        driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+        driveFeedforward = new SimpleMotorFeedforward(0.0, 1.5 / 9.97);
         driveFeedback = new PIDController(0.1, 0.0, 0.0);
-        azimuthFeedback = new PIDController(10.0, 0.0, 0.0);
+        azimuthFeedback = new PIDController(8.0, 0.0, 0.0);
 
         break;
       case SIM:
@@ -118,11 +118,20 @@ public class Module {
         double adjustSpeedSetpoint = speedSetpoint * Math.cos(azimuthFeedback.getPositionError());
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS_METERS;
+        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_CIRCUMFRENCE_METERS;
         moduleIO.setDriveVoltage(
             driveFeedforward.calculate(velocityRadPerSec)
                 + driveFeedback.calculate(
                     moduleIOInputs.driveVelocityRadPerSec, velocityRadPerSec));
+
+        Logger.recordOutput("Drive/Module/velocityRadPerSec", velocityRadPerSec);
+        Logger.recordOutput(
+            "Drive/Module/FeedbackOutput",
+            driveFeedback.calculate(moduleIOInputs.driveVelocityRadPerSec, velocityRadPerSec));
+        Logger.recordOutput(
+            "Drive/Module/FeedforwardOutput", driveFeedforward.calculate(velocityRadPerSec));
+        Logger.recordOutput("Drive/Module/FeedbackError", driveFeedback.getPositionError());
+        Logger.recordOutput("Drive/Module/FeedbackSetpoint", driveFeedback.getSetpoint());
       }
     }
 
@@ -208,12 +217,12 @@ public class Module {
 
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
-    return moduleIOInputs.drivePositionRad * WHEEL_RADIUS_METERS;
+    return moduleIOInputs.drivePositionRad * WHEEL_CIRCUMFRENCE_METERS;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */
   public double getVelocityMetersPerSec() {
-    return moduleIOInputs.driveVelocityRadPerSec * WHEEL_RADIUS_METERS;
+    return moduleIOInputs.driveVelocityRadPerSec * WHEEL_CIRCUMFRENCE_METERS;
   }
 
   /** Returns the module position (turn angle and drive position). */
