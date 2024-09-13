@@ -23,7 +23,8 @@ import frc.robot.util.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
-  private static final double WHEEL_CIRCUMFRENCE_METERS = 2.0 * Math.PI * (5.08 / 100);
+  // private static final double WHEEL_CIRCUMFRENCE_METERS = 2.0 * Math.PI * (5.08 / 100);
+  private static final double WHEEL_RADIUS_METERS = 5.08/100;
 
   private final ModuleIO moduleIO;
   private final ModuleIOInputsAutoLogged moduleIOInputs = new ModuleIOInputsAutoLogged();
@@ -118,7 +119,7 @@ public class Module {
         double adjustSpeedSetpoint = speedSetpoint * Math.cos(azimuthFeedback.getPositionError());
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_CIRCUMFRENCE_METERS;
+        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS_METERS;
         moduleIO.setDriveVoltage(
             driveFeedforward.calculate(velocityRadPerSec)
                 + driveFeedback.calculate(
@@ -217,12 +218,12 @@ public class Module {
 
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
-    return moduleIOInputs.drivePositionRad * WHEEL_CIRCUMFRENCE_METERS;
+    return moduleIOInputs.drivePositionRad * WHEEL_RADIUS_METERS;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */
   public double getVelocityMetersPerSec() {
-    return moduleIOInputs.driveVelocityRadPerSec * WHEEL_CIRCUMFRENCE_METERS;
+    return moduleIOInputs.driveVelocityRadPerSec * WHEEL_RADIUS_METERS;
   }
 
   /** Returns the module position (turn angle and drive position). */
