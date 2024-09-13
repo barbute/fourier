@@ -24,7 +24,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Module {
   // private static final double WHEEL_CIRCUMFRENCE_METERS = 2.0 * Math.PI * (5.08 / 100);
-  private static final double WHEEL_RADIUS_METERS = 5.08/100;
+  private static final double WHEEL_RADIUS_METERS = 5.08 / 100;
 
   private final ModuleIO moduleIO;
   private final ModuleIOInputsAutoLogged moduleIOInputs = new ModuleIOInputsAutoLogged();
