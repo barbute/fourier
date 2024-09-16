@@ -119,7 +119,8 @@ public class Module {
         double adjustSpeedSetpoint = speedSetpoint * Math.cos(azimuthFeedback.getPositionError());
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS_METERS; // Convert from meters to rads
+        double velocityRadPerSec =
+            adjustSpeedSetpoint / WHEEL_RADIUS_METERS; // Convert from meters to rads
         moduleIO.setDriveVoltage(
             driveFeedforward.calculate(velocityRadPerSec)
                 + driveFeedback.calculate(
