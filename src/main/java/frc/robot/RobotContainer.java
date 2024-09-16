@@ -267,9 +267,18 @@ public class RobotContainer {
                 robotIntake,
                 robotIndexer));
 
+    // pilotController
+    //     .y()
+    //     .whileTrue(Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.AIM),
+    // robotShooter))
+    //     .whileFalse(
+    //         Commands.runOnce(
+    //             () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
+
     pilotController
         .y()
-        .whileTrue(Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.AIM), robotShooter))
+        .whileTrue(
+            Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.CUSTOM), robotShooter))
         .whileFalse(
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
@@ -361,13 +370,24 @@ public class RobotContainer {
     //             robotClimb,
     //             robotShooter));
 
+    // pilotController
+    //     .povRight()
+    //     .whileTrue(Commands.run(() ->
+    // robotDrive.setDriveState(DriveState.SIMPLECHARACTERIZATION)))
+    //     .onFalse(
+    //         Commands.runOnce(() -> robotDrive.setDriveState(DriveState.STOPPED), robotDrive)
+    //             .andThen(
+    //                 Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0),
+    // robotDrive)));
+
     pilotController
         .povRight()
-        .whileTrue(Commands.run(() -> robotDrive.setDriveState(DriveState.SIMPLECHARACTERIZATION)))
-        .onFalse(
-            Commands.runOnce(() -> robotDrive.setDriveState(DriveState.STOPPED), robotDrive)
-                .andThen(
-                    Commands.runOnce(() -> robotDrive.runSimpleCharacterization(0.0), robotDrive)));
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  robotDrive.setPose(new Pose2d(1.37, 5.54, Rotation2d.fromDegrees(180.0)));
+                },
+                robotDrive));
   }
 
   /**

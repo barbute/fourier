@@ -219,6 +219,10 @@ public class Shooter extends SubsystemBase {
       double anglerFeedforwardOutput =
           anglerFeedforward.calculate(currentPosition, positionSetpoint);
 
+      Logger.recordOutput("Shooter/Angler/FeedbackOutput", anglerFeedbackOutput);
+      Logger.recordOutput("Shooter/Angler/FeedbackPosError", anglerFeedback.getPositionError());
+      Logger.recordOutput("Shooter/Angler/FeedforwardOutput", anglerFeedforwardOutput);
+
       double anglerCombinedOutput = anglerFeedbackOutput + anglerFeedforwardOutput;
 
       // Stop running PID if we're already at the setpoint
@@ -357,6 +361,18 @@ public class Shooter extends SubsystemBase {
     return getAnglerPositionError().getDegrees() < 0.6
         && getTopLauncherErrorMPS() < 1.0
         && getBottomLauncherErrorMPS() < 1.0;
+  }
+
+  /** Returns whether or not the feedback controller is at it's desired goal */
+  @AutoLogOutput(key = "Shooter/AtGoal")
+  public boolean atGoal() {
+    return anglerFeedback.atGoal();
+  }
+
+  /** Returns the position goal of the angler feedback controller */
+  @AutoLogOutput(key = "Shooter/Angler/PosGoal")
+  public double getPositionGoal() {
+    return anglerFeedback.getGoal().position;
   }
 
   /** Returns the current position of the angler */
