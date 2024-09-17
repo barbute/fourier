@@ -6,6 +6,7 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -99,6 +100,7 @@ public class Shooter extends SubsystemBase {
 
   private ProfiledPIDController anglerFeedback;
   private ScrewArmFeedforward anglerFeedforward;
+  private SimpleMotorFeedforward anglerSimpleFeedforward;
 
   private LoggedTunableNumber anglerFeedbackP;
   private LoggedTunableNumber anglerFeedbackI;
@@ -129,6 +131,7 @@ public class Shooter extends SubsystemBase {
         anglerFeedback =
             new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(50.0, 25.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
+        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.1, 0.15);
         break;
       case SIM:
         anglerFeedback =
@@ -218,6 +221,8 @@ public class Shooter extends SubsystemBase {
           anglerFeedback.calculate(currentPosition.getDegrees(), positionSetpoint.getDegrees());
       double anglerFeedforwardOutput =
           anglerFeedforward.calculate(currentPosition, positionSetpoint);
+      double anglerSimpleFeedforwardOutput =
+          anglerSimpleFeedforward.calculate(anglerFeedback.getSetpoint().velocity);
 
       Logger.recordOutput("Shooter/Angler/FeedbackOutput", anglerFeedbackOutput);
       Logger.recordOutput("Shooter/Angler/FeedbackPosError", anglerFeedback.getPositionError());
@@ -229,17 +234,18 @@ public class Shooter extends SubsystemBase {
           "Shooter/Angler/StopFeedback",
           !(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
               < anglerFeedback.getPositionTolerance()));
+      Logger.recordOutput("Shooter/Angler/SimpleFeedforwardOutput", anglerSimpleFeedforwardOutput);
 
-      double anglerCombinedOutput = anglerFeedbackOutput + anglerFeedforwardOutput;
+      double anglerCombinedOutput =
+          anglerFeedbackOutput + anglerFeedforwardOutput + anglerSimpleFeedforwardOutput;
 
-      // // Stop running PID if we're already at the setpoint
-      // if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
-      //     < anglerFeedback.getPositionTolerance())) {
-      //   anglerIO.setVolts(anglerCombinedOutput);
-      // } else {
-      //   anglerIO.setVolts(0.0);
-      // }
-      anglerIO.setVolts(anglerCombinedOutput);
+      // Stop running PID if we're already at the setpoint
+      if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+          < anglerFeedback.getPositionTolerance())) {
+        anglerIO.setVolts(anglerCombinedOutput);
+      } else {
+        anglerIO.setVolts(0.0);
+      }
     }
 
     if (currentTopFlywheelVelocitySetpointMPS != null) {
