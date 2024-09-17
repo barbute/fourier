@@ -278,10 +278,10 @@ public class RobotContainer {
     pilotController
         .y()
         .whileTrue(
-            Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.CUSTOM), robotShooter))
+            Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.CUSTOM), robotShooter))
         .whileFalse(
             Commands.runOnce(
-                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
+                () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
 
     pilotController
         .a()

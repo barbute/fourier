@@ -127,7 +127,7 @@ public class Shooter extends SubsystemBase {
     switch (Constants.currentMode) {
       case REAL:
         anglerFeedback =
-            new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(100.0, 50.0));
+            new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(50.0, 25.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
         break;
       case SIM:
@@ -221,17 +221,25 @@ public class Shooter extends SubsystemBase {
 
       Logger.recordOutput("Shooter/Angler/FeedbackOutput", anglerFeedbackOutput);
       Logger.recordOutput("Shooter/Angler/FeedbackPosError", anglerFeedback.getPositionError());
+      Logger.recordOutput(
+          "Shooter/Angler/FeedbackPosProfileSetpoint", anglerFeedback.getSetpoint().position);
       Logger.recordOutput("Shooter/Angler/FeedforwardOutput", anglerFeedforwardOutput);
+      Logger.recordOutput("Shooter/Angler/Pos", currentPosition.getDegrees());
+      Logger.recordOutput(
+          "Shooter/Angler/StopFeedback",
+          !(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+              < anglerFeedback.getPositionTolerance()));
 
       double anglerCombinedOutput = anglerFeedbackOutput + anglerFeedforwardOutput;
 
-      // Stop running PID if we're already at the setpoint
-      if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
-          < anglerFeedback.getPositionTolerance())) {
-        anglerIO.setVolts(anglerCombinedOutput);
-      } else {
-        anglerIO.setVolts(0.0);
-      }
+      // // Stop running PID if we're already at the setpoint
+      // if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+      //     < anglerFeedback.getPositionTolerance())) {
+      //   anglerIO.setVolts(anglerCombinedOutput);
+      // } else {
+      //   anglerIO.setVolts(0.0);
+      // }
+      anglerIO.setVolts(anglerCombinedOutput);
     }
 
     if (currentTopFlywheelVelocitySetpointMPS != null) {
@@ -367,12 +375,6 @@ public class Shooter extends SubsystemBase {
   @AutoLogOutput(key = "Shooter/AtGoal")
   public boolean atGoal() {
     return anglerFeedback.atGoal();
-  }
-
-  /** Returns the position goal of the angler feedback controller */
-  @AutoLogOutput(key = "Shooter/Angler/PosGoal")
-  public double getPositionGoal() {
-    return anglerFeedback.getGoal().position;
   }
 
   /** Returns the current position of the angler */
