@@ -138,16 +138,13 @@ public class Shooter extends SubsystemBase {
             new ProfiledPIDController(
                 0.9, 0.0, 0.3, new TrapezoidProfile.Constraints(1600.0, 1600.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
-        break;
-      case REPLAY:
-        anglerFeedback =
-            new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0));
-        anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
+        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.1, 0.15);
         break;
       default:
         anglerFeedback =
             new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
+        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
         break;
     }
 
