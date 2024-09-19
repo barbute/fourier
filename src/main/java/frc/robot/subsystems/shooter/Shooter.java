@@ -131,7 +131,7 @@ public class Shooter extends SubsystemBase {
         anglerFeedback =
             new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(50.0, 25.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
-        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.1, 0.15);
+        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
         break;
       case SIM:
         anglerFeedback =
@@ -160,8 +160,8 @@ public class Shooter extends SubsystemBase {
 
     resetAnglerFeedback();
     anglerFeedback.setTolerance(0.25);
-    anglerFeedback.setIZone(20.0);
-    anglerFeedback.setIntegratorRange(-0.5, 0.5);
+    // anglerFeedback.setIZone(20.0);
+    // anglerFeedback.setIntegratorRange(-0.5, 0.5);
   }
 
   @Override
@@ -209,6 +209,7 @@ public class Shooter extends SubsystemBase {
     }
 
     currentPosition = anglerIOInputs.relativePosition.plus(angleOffset);
+    Logger.recordOutput("Shooter/Angler/Pos", currentPosition.getDegrees());
 
     if (currentPositionSetpoint != null) {
       Rotation2d positionSetpoint =
@@ -226,7 +227,6 @@ public class Shooter extends SubsystemBase {
       Logger.recordOutput(
           "Shooter/Angler/FeedbackPosProfileSetpoint", anglerFeedback.getSetpoint().position);
       Logger.recordOutput("Shooter/Angler/FeedforwardOutput", anglerFeedforwardOutput);
-      Logger.recordOutput("Shooter/Angler/Pos", currentPosition.getDegrees());
       Logger.recordOutput(
           "Shooter/Angler/StopFeedback",
           !(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
@@ -235,6 +235,8 @@ public class Shooter extends SubsystemBase {
 
       double anglerCombinedOutput =
           anglerFeedbackOutput + anglerFeedforwardOutput + anglerSimpleFeedforwardOutput;
+
+      Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
 
       // Stop running PID if we're already at the setpoint
       if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
@@ -273,8 +275,8 @@ public class Shooter extends SubsystemBase {
         hashCode(),
         () -> {
           anglerFeedback.setP(anglerFeedbackP.get());
-          anglerFeedback.setI(anglerFeedbackP.get());
-          anglerFeedback.setD(anglerFeedbackP.get());
+          anglerFeedback.setI(anglerFeedbackI.get());
+          anglerFeedback.setD(anglerFeedbackD.get());
           anglerFeedback.setConstraints(
               new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
         },
@@ -311,12 +313,12 @@ public class Shooter extends SubsystemBase {
       currentPositionSetpoint = null;
       currentTopFlywheelVelocitySetpointMPS = null;
       currentBottomFlywheelVelocitySetpointMPS = null;
-      anglerIO.setVolts(9.0);
+      anglerIO.setVolts(3.0);
     } else if (currentClosedLoopSetpoint == ShooterSetpoints.MANUAL_DOWN) {
       currentPositionSetpoint = null;
       currentTopFlywheelVelocitySetpointMPS = null;
       currentBottomFlywheelVelocitySetpointMPS = null;
-      anglerIO.setVolts(-9.0);
+      anglerIO.setVolts(-3.0);
     } else {
       setAnglerPosition(setpoint.getPosition());
       setLauncherVelocityMPS(setpoint.getTopVelocityMPS(), setpoint.getBottomVelocityMPS());
@@ -326,6 +328,7 @@ public class Shooter extends SubsystemBase {
   /** Set the angler position */
   private void setAnglerPosition(Rotation2d anglerSetpoint) {
     currentPositionSetpoint = anglerSetpoint;
+    System.out.println("CALLED SETANGLERPOSITION()");
 
     if (currentPositionSetpoint != null) {
       DoubleSupplier errorDegrees =
