@@ -44,7 +44,7 @@ public class Shooter extends SubsystemBase {
                         new Rotation3d())),
         () -> 38.0,
         () -> 38.0),
-    SUBWOOFER(() -> Rotation2d.fromDegrees(57.0), () -> 38.0, () -> 38.0),
+    SUBWOOFER(() -> Rotation2d.fromDegrees(56.0), () -> 38.0, () -> 38.0),
     AMP(() -> Rotation2d.fromDegrees(54.0), () -> -4.5, () -> 12.0),
     FEEDER(() -> Rotation2d.fromDegrees(50.0), () -> 30.0, () -> 30.0),
     CUSTOM(
@@ -129,9 +129,9 @@ public class Shooter extends SubsystemBase {
     switch (Constants.currentMode) {
       case REAL:
         anglerFeedback =
-            new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(50.0, 25.0));
+            new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(200.0, 100.0));
         anglerFeedforward = new ScrewArmFeedforward(0.0, 0.0);
-        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+        anglerSimpleFeedforward = new SimpleMotorFeedforward(0.1, 0.1);
         break;
       case SIM:
         anglerFeedback =

@@ -64,11 +64,6 @@ import frc.robot.subsystems.vision.Vision.Camera;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOSim;
-import frc.robot.subsystems.yoshi.Yoshi;
-import frc.robot.subsystems.yoshi.Yoshi.YoshiSetpoints;
-import frc.robot.subsystems.yoshi.YoshiIO;
-import frc.robot.subsystems.yoshi.YoshiIOSim;
-// import frc.robot.subsystems.yoshi.YoshiIOSparkMax;
 import frc.robot.util.math.AllianceFlipUtil;
 import java.util.ArrayList;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -85,7 +80,6 @@ public class RobotContainer {
   private Intake robotIntake;
   private Indexer robotIndexer;
   private Vision robotVision;
-  private Yoshi robotYoshi;
   private Climb robotClimb;
 
   private ArrayList<VisionIO> realVisionIOs = new ArrayList<VisionIO>();
@@ -118,7 +112,6 @@ public class RobotContainer {
         robotVision = new Vision(realVisionIOs);
         // robotYoshi = new Yoshi(new YoshiIOSparkMax());
         robotClimb = new Climb(new ClimbIOSparkMax());
-        robotYoshi = new Yoshi(new YoshiIO() {});
         // robotClimb = new Climb(new ClimbIO() {});
         break;
 
@@ -137,7 +130,6 @@ public class RobotContainer {
         simVisionIOs.add(new VisionIOSim(Camera.FRONT_LEFT_0, () -> robotDrive.getOdometryPose()));
         simVisionIOs.add(new VisionIOSim(Camera.FRONT_RIGHT_1, () -> robotDrive.getOdometryPose()));
         robotVision = new Vision(simVisionIOs);
-        robotYoshi = new Yoshi(new YoshiIOSim());
         robotClimb = new Climb(new ClimbIOSim());
         break;
 
@@ -156,7 +148,6 @@ public class RobotContainer {
         replayVisionIOs.add(new VisionIO() {});
         replayVisionIOs.add(new VisionIO() {});
         robotVision = new Vision(replayVisionIOs);
-        robotYoshi = new Yoshi(new YoshiIO() {});
         robotClimb = new Climb(new ClimbIO() {});
         break;
     }
@@ -231,25 +222,46 @@ public class RobotContainer {
                 robotIntake,
                 robotIndexer));
 
+    // pilotController
+    //     .leftTrigger()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> {
+    //               robotIntake.runIntake(IntakeSetpoints.INTAKE);
+    //               robotIndexer.runIndexer(IndexerSetpoints.STOW);
+    //               robotShooter.runShooter(ShooterSetpoints.INTAKE);
+    //             },
+    //             () -> {
+    //               robotIntake.runIntake(IntakeSetpoints.STOPPED);
+    //               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+    //               robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
+    //             },
+    //             robotIntake,
+    //             robotIndexer,
+    //             robotShooter));
+
+    // pilotController
+    //     .leftTrigger()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> {
+    //               robotShooter.runShooter(ShooterSetpoints.CUSTOM);
+    //             },
+    //             () -> {
+    //               robotShooter.runShooter(ShooterSetpoints.STOPPED);
+    //             },
+    //             robotShooter));
+
     pilotController
         .leftTrigger()
         .whileTrue(
             Commands.startEnd(
                 () -> {
-                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
-                  robotIndexer.runIndexer(IndexerSetpoints.STOW);
-                  robotYoshi.runYoshi(YoshiSetpoints.INTAKE);
-                  robotShooter.runShooter(ShooterSetpoints.INTAKE);
+                  robotShooter.runShooter(ShooterSetpoints.AIM);
                 },
                 () -> {
-                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
-                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-                  robotYoshi.runYoshi(YoshiSetpoints.IDLE);
-                  robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
+                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
                 },
-                robotIntake,
-                robotIndexer,
-                robotYoshi,
                 robotShooter));
 
     pilotController
@@ -278,7 +290,8 @@ public class RobotContainer {
     pilotController
         .y()
         .whileTrue(
-            Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.CUSTOM), robotShooter))
+            Commands.runOnce(
+                () -> robotShooter.runShooter(ShooterSetpoints.SUBWOOFER), robotShooter))
         .whileFalse(
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
@@ -385,7 +398,7 @@ public class RobotContainer {
         .onTrue(
             Commands.runOnce(
                 () -> {
-                  robotDrive.setPose(new Pose2d(1.37, 5.54, Rotation2d.fromDegrees(180.0)));
+                  robotDrive.setPose(new Pose2d(1.37, 5.54, Rotation2d.fromDegrees(0.0)));
                 },
                 robotDrive));
   }
