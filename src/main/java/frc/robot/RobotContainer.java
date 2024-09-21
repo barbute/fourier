@@ -293,44 +293,12 @@ public class RobotContainer {
 
     // FIRE
     copilotController
-        .rightBumper()
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
-                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
-                },
-                () -> {
-                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
-                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-                },
-                robotIntake,
-                robotIndexer));
-
-    // FIRE
-    copilotController
-        .leftTrigger()
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
-                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
-                },
-                () -> {
-                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
-                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-                },
-                robotIntake,
-                robotIndexer));
-
-    // OUTTAKE NOTE
-    copilotController
         .rightTrigger()
         .whileTrue(
             Commands.startEnd(
                 () -> {
-                  robotIntake.runIntake(IntakeSetpoints.OUTTAKE);
-                  robotIndexer.runIndexer(IndexerSetpoints.OUTTAKE);
+                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
                 },
                 () -> {
                   robotIntake.runIntake(IntakeSetpoints.STOPPED);
@@ -338,6 +306,38 @@ public class RobotContainer {
                 },
                 robotIntake,
                 robotIndexer));
+
+    // // FIRE
+    // copilotController
+    //     .leftTrigger()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> {
+    //               robotIntake.runIntake(IntakeSetpoints.INTAKE);
+    //               robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
+    //             },
+    //             () -> {
+    //               robotIntake.runIntake(IntakeSetpoints.STOPPED);
+    //               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+    //             },
+    //             robotIntake,
+    //             robotIndexer));
+
+    // // OUTTAKE NOTE
+    // copilotController
+    //     .rightTrigger()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> {
+    //               robotIntake.runIntake(IntakeSetpoints.OUTTAKE);
+    //               robotIndexer.runIndexer(IndexerSetpoints.OUTTAKE);
+    //             },
+    //             () -> {
+    //               robotIntake.runIntake(IntakeSetpoints.STOPPED);
+    //               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+    //             },
+    //             robotIntake,
+    //             robotIndexer));
 
     // SUBWOOFER
     copilotController
@@ -357,18 +357,18 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
 
-    // AUTO AIM
-    copilotController
-        .leftTrigger()
-        .whileTrue(
-            Commands.startEnd(
-                () -> {
-                  robotShooter.runShooter(ShooterSetpoints.AIM);
-                },
-                () -> {
-                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
-                },
-                robotShooter));
+    // // AUTO AIM
+    // copilotController
+    //     .leftTrigger()
+    //     .whileTrue(
+    //         Commands.startEnd(
+    //             () -> {
+    //               robotShooter.runShooter(ShooterSetpoints.AIM);
+    //             },
+    //             () -> {
+    //               robotShooter.runShooter(ShooterSetpoints.STOPPED);
+    //             },
+    //             robotShooter));
 
     copilotController
         .povUp()
