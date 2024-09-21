@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -156,6 +157,45 @@ public class RobotContainer {
 
     // Set up auto routines
     NamedCommands.registerCommand("Print", new PrintCommand("Hello, world!"));
+    NamedCommands.registerCommand(
+        "Stow",
+        new StartEndCommand(
+            () -> {
+              robotIndexer.runIndexer(IndexerSetpoints.STOW);
+              robotIntake.runIntake(IntakeSetpoints.INTAKE);
+              robotShooter.runShooter(ShooterSetpoints.INTAKE);
+            },
+            () -> {
+              robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+              robotIntake.runIntake(IntakeSetpoints.STOPPED);
+              robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
+            },
+            robotIndexer,
+            robotIntake,
+            robotShooter));
+    NamedCommands.registerCommand(
+        "Fire",
+        new StartEndCommand(
+            () -> {
+              robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
+              robotIntake.runIntake(IntakeSetpoints.INTAKE);
+            },
+            () -> {
+              robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+              robotIntake.runIntake(IntakeSetpoints.STOPPED);
+            },
+            robotIndexer,
+            robotIntake));
+    NamedCommands.registerCommand(
+        "AimSubwoofer",
+        new StartEndCommand(
+            () -> {
+              robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
+            },
+            () -> {
+              robotShooter.runShooter(ShooterSetpoints.STOPPED);
+            },
+            robotShooter));
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
