@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.util.debugging.Alert;
 import frc.robot.util.debugging.Alert.AlertType;
 import frc.robot.util.debugging.FudgeFactors;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /**
@@ -33,7 +34,7 @@ public class TargetingSystem {
   private Pose3d currentOdometryPose = new Pose3d();
   private Pose3d currentFilteredPose = new Pose3d();
 
-  private boolean calculateWithVision = false;
+  private boolean calculateWithVision = true;
   private boolean useFudgeFactors = false;
 
   // Debugging data
@@ -141,6 +142,7 @@ public class TargetingSystem {
    * Calculate distance between the current pose (held inside the Targeting System) and the target
    * pose passed into this function
    */
+  @AutoLogOutput(key = "TargetingSystem/ComputedDistance")
   public double calculateDistance(Pose3d targetPose) {
     Pose3d currentPose = (calculateWithVision) ? currentFilteredPose : currentOdometryPose;
 
@@ -166,6 +168,7 @@ public class TargetingSystem {
   }
 
   /** Calculate the optimal angle for the shooter when passed in a taget pose */
+  @AutoLogOutput(key = "TargetingSystem/ComputedAngle")
   public Rotation2d calculateOptimalAngle(Pose3d targetPose) {
     if (launchMap == null) {
       initializeLaunchMap();
