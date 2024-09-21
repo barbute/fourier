@@ -149,8 +149,9 @@ public class TargetingSystem {
     Translation2d currentPose2d = new Translation2d(currentPose.getX(), currentPose.getY());
     Translation2d targetPose2d = new Translation2d(targetPose.getX(), targetPose.getY());
 
-    calculatedDistanceM =
-        applyFudgeFactors(distanceFilter.calculate(currentPose2d.getDistance(targetPose2d)));
+    // calculatedDistanceM =
+    //     applyFudgeFactors(distanceFilter.calculate(currentPose2d.getDistance(targetPose2d)));
+    calculatedDistanceM = applyFudgeFactors(currentPose2d.getDistance(targetPose2d));
     return calculatedDistanceM;
   }
 
@@ -159,8 +160,8 @@ public class TargetingSystem {
     // TODO Consider switch to pose2d and just use pose3d.toPose2d()
     Pose3d currentPose = (calculateWithVision) ? currentFilteredPose : currentOdometryPose;
 
-    double deltaX = currentPose.getX() - targetPose.getX();
-    double deltaY = currentPose.getY() - targetPose.getY();
+    double deltaX = targetPose.getX() - currentPose.getX();
+    double deltaY = targetPose.getY() - currentPose.getY();
 
     calculatedHeading = applyFudgeFactors(new Rotation2d(deltaX, deltaY));
 

@@ -329,7 +329,6 @@ public class Shooter extends SubsystemBase {
   /** Set the angler position */
   private void setAnglerPosition(Rotation2d anglerSetpoint) {
     currentPositionSetpoint = anglerSetpoint;
-    System.out.println("CALLED SETANGLERPOSITION()");
 
     if (currentPositionSetpoint != null) {
       DoubleSupplier errorDegrees =
