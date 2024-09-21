@@ -44,7 +44,7 @@ public class Shooter extends SubsystemBase {
                         new Rotation3d())),
         () -> 38.0,
         () -> 38.0),
-    SUBWOOFER(() -> Rotation2d.fromDegrees(56.0), () -> 38.0, () -> 38.0),
+    SUBWOOFER(() -> Rotation2d.fromDegrees(55.0), () -> 38.0, () -> 38.0),
     AMP(() -> Rotation2d.fromDegrees(54.0), () -> -4.5, () -> 12.0),
     FEEDER(() -> Rotation2d.fromDegrees(50.0), () -> 30.0, () -> 30.0),
     CUSTOM(

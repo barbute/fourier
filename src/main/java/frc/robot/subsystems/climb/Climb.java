@@ -14,8 +14,8 @@ import org.littletonrobotics.junction.Logger;
 
 public class Climb extends SubsystemBase {
   public enum ClimbSetpoints {
-    BOTH_IN(() -> 12.0, () -> 12.0),
-    BOTH_OUT(() -> -12.0, () -> -12.0),
+    BOTH_IN(() -> -12.0, () -> -12.0),
+    BOTH_OUT(() -> 12.0, () -> 12.0),
     CUSTOM(
         () -> new LoggedTunableNumber("Climb/LeftVoltageSetpoint", 1.0).get(),
         () -> new LoggedTunableNumber("Climb/RightVoltageSetpoint", 1.0).get()),

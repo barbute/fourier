@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.climb.Climb;
@@ -223,6 +224,8 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    // new Trigger(() -> robotIndexer.getBeamBroken()).whileTrue(Commands.run(() -> pilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.2))).whileFalse(Commands.run(() -> pilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
+
     robotDrive.acceptTeleroperatedInputs(
         () -> -pilotController.getLeftY(),
         () -> -pilotController.getLeftX(),

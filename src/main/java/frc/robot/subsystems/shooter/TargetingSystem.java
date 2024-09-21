@@ -159,8 +159,8 @@ public class TargetingSystem {
     // TODO Consider switch to pose2d and just use pose3d.toPose2d()
     Pose3d currentPose = (calculateWithVision) ? currentFilteredPose : currentOdometryPose;
 
-    double deltaX = targetPose.getX() - currentPose.getX();
-    double deltaY = targetPose.getY() - currentPose.getY();
+    double deltaX = currentPose.getX() - targetPose.getX();
+    double deltaY = currentPose.getY() - targetPose.getY();
 
     calculatedHeading = applyFudgeFactors(new Rotation2d(deltaX, deltaY));
 
