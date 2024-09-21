@@ -307,18 +307,21 @@ public class RobotContainer {
                 robotIntake,
                 robotIndexer));
 
-    // SHOT MAP AIM
+    // FIRE
     copilotController
         .leftTrigger()
         .whileTrue(
             Commands.startEnd(
                 () -> {
-                  robotShooter.runShooter(ShooterSetpoints.AIM);
+                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
                 },
                 () -> {
-                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
                 },
-                robotShooter));
+                robotIntake,
+                robotIndexer));
 
     // OUTTAKE NOTE
     copilotController
@@ -346,12 +349,26 @@ public class RobotContainer {
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
 
+    // AMP
     copilotController
         .b()
         .whileTrue(Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.AMP), robotShooter))
         .whileFalse(
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
+
+    // AUTO AIM
+    copilotController
+        .leftTrigger()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.AIM);
+                },
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
+                },
+                robotShooter));
 
     copilotController
         .povUp()
