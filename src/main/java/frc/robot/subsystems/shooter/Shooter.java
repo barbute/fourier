@@ -212,39 +212,81 @@ public class Shooter extends SubsystemBase {
     currentPosition = anglerIOInputs.relativePosition.plus(angleOffset);
     Logger.recordOutput("Shooter/Angler/Pos", currentPosition.getDegrees());
 
-    if (currentPositionSetpoint != null) {
-      Rotation2d positionSetpoint =
-          Rotation2d.fromDegrees(MathUtil.clamp(currentPositionSetpoint.getDegrees(), 26.5, 57.0));
+    if (currentClosedLoopSetpoint == ShooterSetpoints.AIM) {
+      if (currentPositionSetpoint != null) {
+        Rotation2d positionSetpoint =
+            Rotation2d.fromDegrees(
+                MathUtil.clamp(currentClosedLoopSetpoint.getPosition().getDegrees(), 26.5, 57.0));
 
-      double anglerFeedbackOutput =
-          anglerFeedback.calculate(currentPosition.getDegrees(), positionSetpoint.getDegrees());
-      double anglerFeedforwardOutput =
-          anglerFeedforward.calculate(currentPosition, positionSetpoint);
-      double anglerSimpleFeedforwardOutput =
-          anglerSimpleFeedforward.calculate(anglerFeedback.getSetpoint().velocity);
+        double anglerFeedbackOutput =
+            anglerFeedback.calculate(currentPosition.getDegrees(), positionSetpoint.getDegrees());
+        double anglerFeedforwardOutput =
+            anglerFeedforward.calculate(currentPosition, positionSetpoint);
+        double anglerSimpleFeedforwardOutput =
+            anglerSimpleFeedforward.calculate(anglerFeedback.getSetpoint().velocity);
 
-      Logger.recordOutput("Shooter/Angler/FeedbackOutput", anglerFeedbackOutput);
-      Logger.recordOutput("Shooter/Angler/FeedbackPosError", anglerFeedback.getPositionError());
-      Logger.recordOutput(
-          "Shooter/Angler/FeedbackPosProfileSetpoint", anglerFeedback.getSetpoint().position);
-      Logger.recordOutput("Shooter/Angler/FeedforwardOutput", anglerFeedforwardOutput);
-      Logger.recordOutput(
-          "Shooter/Angler/StopFeedback",
-          !(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
-              < anglerFeedback.getPositionTolerance()));
-      Logger.recordOutput("Shooter/Angler/SimpleFeedforwardOutput", anglerSimpleFeedforwardOutput);
+        Logger.recordOutput("Shooter/Angler/FeedbackOutput", anglerFeedbackOutput);
+        Logger.recordOutput("Shooter/Angler/FeedbackPosError", anglerFeedback.getPositionError());
+        Logger.recordOutput(
+            "Shooter/Angler/FeedbackPosProfileSetpoint", anglerFeedback.getSetpoint().position);
+        Logger.recordOutput("Shooter/Angler/FeedforwardOutput", anglerFeedforwardOutput);
+        Logger.recordOutput(
+            "Shooter/Angler/StopFeedback",
+            !(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+                < anglerFeedback.getPositionTolerance()));
+        Logger.recordOutput(
+            "Shooter/Angler/SimpleFeedforwardOutput", anglerSimpleFeedforwardOutput);
 
-      double anglerCombinedOutput =
-          anglerFeedbackOutput + anglerFeedforwardOutput + anglerSimpleFeedforwardOutput;
+        double anglerCombinedOutput =
+            anglerFeedbackOutput + anglerFeedforwardOutput + anglerSimpleFeedforwardOutput;
 
-      Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
+        Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
 
-      // Stop running PID if we're already at the setpoint
-      if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
-          < anglerFeedback.getPositionTolerance())) {
-        anglerIO.setVolts(anglerCombinedOutput);
-      } else {
-        anglerIO.setVolts(0.0);
+        // Stop running PID if we're already at the setpoint
+        if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+            < anglerFeedback.getPositionTolerance())) {
+          anglerIO.setVolts(anglerCombinedOutput);
+        } else {
+          anglerIO.setVolts(0.0);
+        }
+      }
+    } else {
+      if (currentPositionSetpoint != null) {
+        Rotation2d positionSetpoint =
+            Rotation2d.fromDegrees(
+                MathUtil.clamp(currentPositionSetpoint.getDegrees(), 26.5, 57.0));
+
+        double anglerFeedbackOutput =
+            anglerFeedback.calculate(currentPosition.getDegrees(), positionSetpoint.getDegrees());
+        double anglerFeedforwardOutput =
+            anglerFeedforward.calculate(currentPosition, positionSetpoint);
+        double anglerSimpleFeedforwardOutput =
+            anglerSimpleFeedforward.calculate(anglerFeedback.getSetpoint().velocity);
+
+        Logger.recordOutput("Shooter/Angler/FeedbackOutput", anglerFeedbackOutput);
+        Logger.recordOutput("Shooter/Angler/FeedbackPosError", anglerFeedback.getPositionError());
+        Logger.recordOutput(
+            "Shooter/Angler/FeedbackPosProfileSetpoint", anglerFeedback.getSetpoint().position);
+        Logger.recordOutput("Shooter/Angler/FeedforwardOutput", anglerFeedforwardOutput);
+        Logger.recordOutput(
+            "Shooter/Angler/StopFeedback",
+            !(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+                < anglerFeedback.getPositionTolerance()));
+        Logger.recordOutput(
+            "Shooter/Angler/SimpleFeedforwardOutput", anglerSimpleFeedforwardOutput);
+
+        double anglerCombinedOutput =
+            anglerFeedbackOutput + anglerFeedforwardOutput + anglerSimpleFeedforwardOutput;
+
+        Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
+
+        // Stop running PID if we're already at the setpoint
+        if (!(Math.abs(anglerFeedback.getGoal().position - currentPosition.getDegrees())
+            < anglerFeedback.getPositionTolerance())) {
+          anglerIO.setVolts(anglerCombinedOutput);
+        } else {
+          anglerIO.setVolts(0.0);
+        }
       }
     }
 
