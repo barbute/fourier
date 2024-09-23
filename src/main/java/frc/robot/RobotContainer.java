@@ -237,10 +237,26 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    new Trigger(() -> robotShooter.atGoal())
+    new Trigger(
+            () ->
+                robotShooter.atGoal()
+                    && (robotShooter.getCurrentSetpoint() == ShooterSetpoints.AIM
+                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.AMP
+                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.SUBWOOFER))
         .whileTrue(
             Commands.runOnce(
                 () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.2)))
+        .whileFalse(
+            Commands.runOnce(
+                () ->
+                    copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
+    new Trigger(
+            () ->
+                robotIndexer.getBeamBroken()
+                    && robotIndexer.getCurrentSetpoint() == IndexerSetpoints.STOW)
+        .whileTrue(
+            Commands.runOnce(
+                () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.3)))
         .whileFalse(
             Commands.runOnce(
                 () ->
