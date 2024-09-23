@@ -116,6 +116,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         Units.rotationsPerMinuteToRadiansPerSecond(driveEncoder.getVelocity()) / DRIVE_GEAR_RATIO;
     inputs.driveAppliedVolts = driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
+    inputs.driveTemperatureCelsius = new double[] {driveMotor.getMotorTemperature()};
 
     inputs.azimuthAbsolutePosition =
         Rotation2d.fromRotations(azimuthAbsoluteEncoder.getAbsolutePosition().getValueAsDouble())
@@ -127,6 +128,7 @@ public class ModuleIOSparkMax implements ModuleIO {
             / AZIMUTH_GEAR_RATIO;
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
+    inputs.azimuthTemperatureCelsius = new double[] {azimuthMotor.getMotorTemperature()};
   }
 
   @Override
