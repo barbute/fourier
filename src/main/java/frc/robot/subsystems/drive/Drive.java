@@ -82,7 +82,7 @@ public class Drive extends SubsystemBase {
       MAX_LINEAR_SPEED_MPS / DRIVE_BASE_RADIUS; // 24.0 * Math.PI
   // Second argument is the max accel
   public static final ModuleLimits MODULE_LIMITS =
-      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5.0, MAX_ANGULAR_SPEED_MPS);
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, 8.0, MAX_ANGULAR_SPEED_MPS);
 
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
