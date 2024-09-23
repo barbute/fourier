@@ -250,17 +250,17 @@ public class RobotContainer {
             Commands.runOnce(
                 () ->
                     copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
-    new Trigger(
-            () ->
-                robotIndexer.getBeamBroken()
-                    && robotIndexer.getCurrentSetpoint() == IndexerSetpoints.STOW)
-        .whileTrue(
-            Commands.runOnce(
-                () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.3)))
-        .whileFalse(
-            Commands.runOnce(
-                () ->
-                    copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
+    // new Trigger(() -> robotIndexer.getBeamBroken() &&
+    // copilotController.leftBumper().getAsBoolean())
+    //     .whileTrue(
+    //         Commands.runOnce(
+    //             () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble,
+    // 0.3)))
+    //     .whileFalse(
+    //         Commands.runOnce(
+    //             () ->
+    //                 copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble,
+    // 0.0)));
 
     robotDrive.acceptTeleroperatedInputs(
         () -> -pilotController.getLeftY(),
