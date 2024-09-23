@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.subsystems.climb.Climb;
@@ -194,6 +195,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "AimSubwoofer-Fire",
         Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.SUBWOOFER), robotShooter)
+            .repeatedly()
             .withTimeout(3.0)
             .andThen(
                 new StartEndCommand(
@@ -207,6 +209,7 @@ public class RobotContainer {
                     },
                     robotIndexer,
                     robotIntake))
+            .repeatedly()
             .withTimeout(2.0));
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -234,10 +237,14 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // new Trigger(() -> robotIndexer.getBeamBroken()).whileTrue(Commands.run(() ->
-    // pilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble,
-    // 0.2))).whileFalse(Commands.run(() ->
-    // pilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
+    new Trigger(() -> robotShooter.atGoal())
+        .whileTrue(
+            Commands.runOnce(
+                () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.2)))
+        .whileFalse(
+            Commands.runOnce(
+                () ->
+                    copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
 
     robotDrive.acceptTeleroperatedInputs(
         () -> -pilotController.getLeftY(),
