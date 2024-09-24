@@ -325,13 +325,45 @@ public class RobotContainer {
                 robotIndexer,
                 robotShooter));
 
+    // OUTTAKE
+    copilotController
+        .rightBumper()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.OUTTAKE);
+                  robotIndexer.runIndexer(IndexerSetpoints.OUTTAKE);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                },
+                robotIntake,
+                robotIndexer));
+
+    // AMP FIRE
+    copilotController
+        .leftTrigger()
+        .whileTrue(
+            Commands.startEnd(
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.AMP_SHOOT);
+                  robotIndexer.runIndexer(IndexerSetpoints.AMP_SHOOT);
+                },
+                () -> {
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                },
+                robotIntake,
+                robotIndexer));
+
     // FIRE
     copilotController
         .rightTrigger()
         .whileTrue(
             Commands.startEnd(
                 () -> {
-                  robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                  robotIntake.runIntake(IntakeSetpoints.SPEAKER_SHOOT);
                   robotIndexer.runIndexer(IndexerSetpoints.SPEAKER_SHOOT);
                 },
                 () -> {
@@ -341,44 +373,21 @@ public class RobotContainer {
                 robotIntake,
                 robotIndexer));
 
-    // // FIRE
-    // copilotController
-    //     .leftTrigger()
-    //     .whileTrue(
-    //         Commands.startEnd(
-    //             () -> {
-    //               robotIntake.runIntake(IntakeSetpoints.INTAKE);
-    //               robotIndexer.runIndexer(IndexerSetpoints.INTAKE);
-    //             },
-    //             () -> {
-    //               robotIntake.runIntake(IntakeSetpoints.STOPPED);
-    //               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-    //             },
-    //             robotIntake,
-    //             robotIndexer));
-
-    // // OUTTAKE NOTE
-    // copilotController
-    //     .rightTrigger()
-    //     .whileTrue(
-    //         Commands.startEnd(
-    //             () -> {
-    //               robotIntake.runIntake(IntakeSetpoints.OUTTAKE);
-    //               robotIndexer.runIndexer(IndexerSetpoints.OUTTAKE);
-    //             },
-    //             () -> {
-    //               robotIntake.runIntake(IntakeSetpoints.STOPPED);
-    //               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-    //             },
-    //             robotIntake,
-    //             robotIndexer));
-
     // SUBWOOFER
     copilotController
         .y()
         .whileTrue(
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.SUBWOOFER), robotShooter))
+        .whileFalse(
+            Commands.runOnce(
+                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
+
+    // AIM
+    copilotController
+        .a()
+        .whileTrue(
+            Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.AIM), robotShooter))
         .whileFalse(
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
@@ -389,20 +398,7 @@ public class RobotContainer {
         .whileTrue(Commands.run(() -> robotShooter.runShooter(ShooterSetpoints.AMP), robotShooter))
         .whileFalse(
             Commands.runOnce(
-                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
-
-    // // AUTO AIM
-    // copilotController
-    //     .leftTrigger()
-    //     .whileTrue(
-    //         Commands.startEnd(
-    //             () -> {
-    //               robotShooter.runShooter(ShooterSetpoints.AIM);
-    //             },
-    //             () -> {
-    //               robotShooter.runShooter(ShooterSetpoints.STOPPED);
-    //             },
-    //             robotShooter));
+                () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
 
     copilotController
         .povUp()
