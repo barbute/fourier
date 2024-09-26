@@ -108,8 +108,8 @@ public class Shooter extends SubsystemBase {
   private LoggedTunableNumber anglerFeedbackV;
   private LoggedTunableNumber anglerFeedbackA;
 
-  private LinearProfile topFlywheelProfile = new LinearProfile(50.0, 0.02);
-  private LinearProfile bottomFlywheelProfile = new LinearProfile(50.0, 0.02);
+  private LinearProfile topFlywheelProfile = new LinearProfile(30.0, 0.02);
+  private LinearProfile bottomFlywheelProfile = new LinearProfile(30.0, 0.02);
 
   private boolean angleEncoderCalibrated = false;
   private Rotation2d angleOffset = new Rotation2d();

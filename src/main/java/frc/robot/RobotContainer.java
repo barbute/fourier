@@ -19,12 +19,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -173,8 +176,7 @@ public class RobotContainer {
                 () -> {
                   robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
                 })
-            .repeatedly()
-            .withTimeout(2.5));
+            .andThen(new WaitCommand(3.0)));
     NamedCommands.registerCommand(
         "shooter-stop",
         new InstantCommand(
@@ -235,7 +237,8 @@ public class RobotContainer {
                     && (robotShooter.getCurrentSetpoint() == ShooterSetpoints.AIM
                         || robotShooter.getCurrentSetpoint() == ShooterSetpoints.AMP
                         || robotShooter.getCurrentSetpoint() == ShooterSetpoints.SUBWOOFER
-                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.FEEDER))
+                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.FEEDER)
+                    && DriverStation.isTeleopEnabled())
         .whileTrue(
             Commands.runOnce(
                 () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.2)))
@@ -243,6 +246,25 @@ public class RobotContainer {
             Commands.runOnce(
                 () ->
                     copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
+
+    new Trigger(
+            () ->
+                robotIndexer.getBeamBroken()
+                    && robotIndexer.getCurrentSetpoint() == IndexerSetpoints.STOW
+                    && DriverStation.isTeleop()
+                    && copilotController.leftBumper().getAsBoolean())
+        .whileTrue(
+            Commands.runOnce(
+                    () -> copilotController.getHID().setRumble(RumbleType.kBothRumble, 0.1))
+                .andThen(
+                    Commands.runOnce(
+                        () -> pilotController.getHID().setRumble(RumbleType.kBothRumble, 0.1))))
+        .whileFalse(
+            Commands.runOnce(
+                    () -> copilotController.getHID().setRumble(RumbleType.kBothRumble, 0.0))
+                .andThen(
+                    Commands.runOnce(
+                        () -> pilotController.getHID().setRumble(RumbleType.kBothRumble, 0.0))));
 
     robotDrive.acceptTeleroperatedInputs(
         () -> -pilotController.getLeftY(),
