@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.55,
+        "x": 1.3,
         "y": 5.55
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.05,
+        "x": 2.4180339887498947,
         "y": 5.55
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.3,
-        "y": 5.55
+        "x": 2.52,
+        "y": 4.106429740637259
       },
       "prevControl": {
-        "x": 1.9814951222495039,
-        "y": 5.5488123124394395
+        "x": 0.9993093674254454,
+        "y": 4.106429740637259
       },
       "nextControl": null,
       "isLocked": false,
@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "spike-subwoofer",
+  "folder": "subwoofer-spike",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }
