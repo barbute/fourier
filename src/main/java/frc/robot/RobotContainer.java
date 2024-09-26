@@ -23,8 +23,8 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -160,57 +160,49 @@ public class RobotContainer {
     // Set up auto routines
     NamedCommands.registerCommand("Print", new PrintCommand("Hello, world!"));
     NamedCommands.registerCommand(
-        "StartStow",
-        Commands.runOnce(
+        "stow-start",
+        new InstantCommand(
             () -> {
               robotIndexer.runIndexer(IndexerSetpoints.STOW);
               robotIntake.runIntake(IntakeSetpoints.INTAKE);
               robotShooter.runShooter(ShooterSetpoints.INTAKE);
-            },
-            robotIndexer,
-            robotIntake,
-            robotShooter));
+            }));
     NamedCommands.registerCommand(
-        "StopStow",
-        Commands.runOnce(
+        "aim-subwoofer",
+        new InstantCommand(
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
+                })
+            .repeatedly()
+            .withTimeout(2.5));
+    NamedCommands.registerCommand(
+        "shooter-stop",
+        new InstantCommand(
+            () -> {
+              robotShooter.runShooter(ShooterSetpoints.STOPPED);
+            }));
+    NamedCommands.registerCommand(
+        "rollers-stop",
+        new InstantCommand(
             () -> {
               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
               robotIntake.runIntake(IntakeSetpoints.STOPPED);
-              robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
-            },
-            robotIndexer,
-            robotIntake,
-            robotShooter));
+            }));
     NamedCommands.registerCommand(
-        "StopStow",
-        Commands.runOnce(
-            () -> {
-              robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-              robotIntake.runIntake(IntakeSetpoints.STOPPED);
-              robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
-            },
-            robotIndexer,
-            robotIntake,
-            robotShooter));
-    NamedCommands.registerCommand(
-        "AimSubwoofer-Fire",
-        Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.SUBWOOFER), robotShooter)
+        "fire",
+        Commands.runEnd(
+                () -> {
+                  robotIndexer.runIndexer(IndexerSetpoints.SPEAKER_SHOOT);
+                  robotIntake.runIntake(IntakeSetpoints.SPEAKER_SHOOT);
+                },
+                () -> {
+                  robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                  robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                },
+                robotIndexer,
+                robotIntake)
             .repeatedly()
-            .withTimeout(3.0)
-            .andThen(
-                new StartEndCommand(
-                    () -> {
-                      robotIndexer.runIndexer(IndexerSetpoints.SPEAKER_SHOOT);
-                      robotIntake.runIntake(IntakeSetpoints.SPEAKER_SHOOT);
-                    },
-                    () -> {
-                      robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-                      robotIntake.runIntake(IntakeSetpoints.STOPPED);
-                    },
-                    robotIndexer,
-                    robotIntake))
-            .repeatedly()
-            .withTimeout(2.0));
+            .withTimeout(1.0));
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
@@ -250,17 +242,6 @@ public class RobotContainer {
             Commands.runOnce(
                 () ->
                     copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
-    // new Trigger(() -> robotIndexer.getBeamBroken() &&
-    // copilotController.leftBumper().getAsBoolean())
-    //     .whileTrue(
-    //         Commands.runOnce(
-    //             () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble,
-    // 0.3)))
-    //     .whileFalse(
-    //         Commands.runOnce(
-    //             () ->
-    //                 copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble,
-    // 0.0)));
 
     robotDrive.acceptTeleroperatedInputs(
         () -> -pilotController.getLeftY(),
