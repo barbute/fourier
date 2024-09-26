@@ -368,8 +368,7 @@ public class RobotContainer {
     copilotController
         .x()
         .whileTrue(
-            Commands.runOnce(
-                () -> robotShooter.runShooter(ShooterSetpoints.FEEDER), robotShooter))
+            Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.FEEDER), robotShooter))
         .whileFalse(
             Commands.runOnce(
                 () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
