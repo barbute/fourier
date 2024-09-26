@@ -234,7 +234,8 @@ public class RobotContainer {
                 robotShooter.atGoal()
                     && (robotShooter.getCurrentSetpoint() == ShooterSetpoints.AIM
                         || robotShooter.getCurrentSetpoint() == ShooterSetpoints.AMP
-                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.SUBWOOFER))
+                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.SUBWOOFER
+                        || robotShooter.getCurrentSetpoint() == ShooterSetpoints.FEEDER))
         .whileTrue(
             Commands.runOnce(
                 () -> copilotController.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.2)))
