@@ -255,10 +255,10 @@ public class RobotContainer {
                     && copilotController.leftBumper().getAsBoolean())
         .whileTrue(
             Commands.runOnce(
-                    () -> copilotController.getHID().setRumble(RumbleType.kBothRumble, 0.1))
+                    () -> copilotController.getHID().setRumble(RumbleType.kBothRumble, 0.2))
                 .andThen(
                     Commands.runOnce(
-                        () -> pilotController.getHID().setRumble(RumbleType.kBothRumble, 0.1))))
+                        () -> pilotController.getHID().setRumble(RumbleType.kBothRumble, 0.2))))
         .whileFalse(
             Commands.runOnce(
                     () -> copilotController.getHID().setRumble(RumbleType.kBothRumble, 0.0))
@@ -474,7 +474,12 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    return Commands.runOnce(() -> robotDrive.setDriveState(DriveState.AUTO), robotDrive)
+        .andThen(autoChooser.get())
+        .handleInterrupt(
+            () -> {
+              robotDrive.setDriveState(DriveState.STOPPED);
+            });
   }
 
   /** Returns the Chassis instance to run in robotPeriodic() */

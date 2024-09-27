@@ -61,6 +61,8 @@ public class Drive extends SubsystemBase {
   public enum DriveState {
     /** Driving with input from driver controllers */
     TELEOPERATED,
+    /** Driving based on preplanned trajectories */
+    AUTO,
     /** Driving based on a preplanned trajectory */
     TRAJECTORY,
     /** Driving to a location on a field automatically */
@@ -104,7 +106,6 @@ public class Drive extends SubsystemBase {
           });
   private SwerveSetpointGenerator setpointGenerator =
       new SwerveSetpointGenerator(KINEMATICS, MODULE_TRANSLATIONS);
-  private boolean areModulesOrienting = false;
 
   // private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = new Rotation2d();
@@ -127,6 +128,8 @@ public class Drive extends SubsystemBase {
 
   /** The currently desired chassis speeds */
   private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+
+  private ChassisSpeeds pathPlannerDesiredSpeeds = new ChassisSpeeds();
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
@@ -160,7 +163,7 @@ public class Drive extends SubsystemBase {
         this::getOdometryPose,
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
-        this::runVelocity,
+        (speeds) -> pathPlannerDesiredSpeeds = speeds,
         new HolonomicPathFollowerConfig(
             new PIDConstants(5.0, 0.0, 0.0),
             new PIDConstants(5.0, 0.0, 0.0),
@@ -264,6 +267,9 @@ public class Drive extends SubsystemBase {
                   MAX_ANGULAR_SPEED_MPS);
         }
         break;
+      case AUTO:
+        desiredSpeeds = pathPlannerDesiredSpeeds;
+        break;
       case TRAJECTORY:
         break;
       case AUTOALIGN:
@@ -287,6 +293,12 @@ public class Drive extends SubsystemBase {
     if (desiredSpeeds != null) {
       runVelocity(desiredSpeeds);
     }
+
+    if (driveState != null) {
+      Logger.recordOutput("Drive/State", driveState);
+    } else {
+      Logger.recordOutput("Drive/State", "none");
+    }
   }
 
   /**
@@ -306,41 +318,45 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
-    ChassisSpeeds discreteSpeeds = discretize(speeds); // Translational skew compensation
+    //   for (int i = 0; i < 4; i++) {
+    //     // Optimized azimuth setpoint angles
+    //     optimizedSetpointStates[i] =
+    //         SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
+
+    //     // Prevent jittering from small joystick inputs or noise
+    //     optimizedSetpointStates[i] =
+    //         (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
+    //                 > 0.01)
+    //             ? modules[i].runSetpoint(optimizedSetpointStates[i])
+    //             : modules[i].runSetpoint(
+    //                 new SwerveModuleState(
+    //                     optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
+
+    ChassisSpeeds discreteSpeeds = discretize(speeds);
     desiredChassisSpeeds = discreteSpeeds;
     SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-        setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, MAX_LINEAR_SPEED_MPS);
 
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
 
-    if (!areModulesOrienting) {
-      currentSetpoint =
-          setpointGenerator.generateSetpoint(MODULE_LIMITS, currentSetpoint, discreteSpeeds, 0.02);
+    currentSetpoint =
+        setpointGenerator.generateSetpoint(
+            MODULE_LIMITS, currentSetpoint, desiredChassisSpeeds, 0.02);
 
-      for (int i = 0; i < 4; i++) {
-        // Optimized azimuth setpoint angles
-        optimizedSetpointStates[i] =
-            SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
+    for (int i = 0; i < 4; i++) {
+      setpointStates[i] =
+          new SwerveModuleState(
+              currentSetpoint.moduleStates()[i].speedMetersPerSecond,
+              Math.abs(
+                          currentSetpoint.moduleStates()[i].speedMetersPerSecond
+                              / MAX_LINEAR_SPEED_MPS)
+                      < 0.01
+                  ? modules[i].getState().angle
+                  : currentSetpoint.moduleStates()[i].angle);
 
-        // Prevent jittering from small joystick inputs or noise
-        optimizedSetpointStates[i] =
-            (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
-                    > 0.01)
-                ? modules[i].runSetpoint(optimizedSetpointStates[i])
-                : modules[i].runSetpoint(
-                    new SwerveModuleState(
-                        optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
-
-        // Run state
-        modules[i].runSetpoint(optimizedSetpointStates[i]);
-      }
-    } else {
-      for (int i = 0; i < 4; i++) {
-        optimizedSetpointStates[i] =
-            modules[i].runSetpoint(
-                setpointStates[i]); // setDesiredState returns the optimized state
-      }
+      optimizedSetpointStates[i] =
+          modules[i].runSetpoint(
+              SwerveModuleState.optimize(setpointStates[i], modules[i].getState().angle));
     }
 
     // Log setpoint states
