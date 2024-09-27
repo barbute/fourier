@@ -365,7 +365,7 @@ public class RobotContainer {
                 () -> {
                   robotIntake.runIntake(IntakeSetpoints.STOPPED);
                   robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
-                  robotShooter.runShooter(ShooterSetpoints.TRAVERSAL);
+                  robotShooter.runShooter(ShooterSetpoints.STOPPED);
                 },
                 robotIntake,
                 robotIndexer,
@@ -427,7 +427,7 @@ public class RobotContainer {
                 () -> robotShooter.runShooter(ShooterSetpoints.SUBWOOFER), robotShooter))
         .whileFalse(
             Commands.runOnce(
-                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
+                () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
 
     // PASS
     copilotController
@@ -436,7 +436,7 @@ public class RobotContainer {
             Commands.runOnce(() -> robotShooter.runShooter(ShooterSetpoints.FEEDER), robotShooter))
         .whileFalse(
             Commands.runOnce(
-                () -> robotShooter.runShooter(ShooterSetpoints.TRAVERSAL), robotShooter));
+                () -> robotShooter.runShooter(ShooterSetpoints.STOPPED), robotShooter));
 
     // AIM
     copilotController
