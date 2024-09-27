@@ -7,10 +7,11 @@
     "subwoofer-spike"
   ],
   "autoFolders": [
+    "three-piece",
     "two_piece"
   ],
   "defaultMaxVel": 4.42,
-  "defaultMaxAccel": 2.0,
+  "defaultMaxAccel": 6.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "maxModuleSpeed": 4.42

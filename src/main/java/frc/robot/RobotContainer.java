@@ -176,7 +176,13 @@ public class RobotContainer {
                 () -> {
                   robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
                 })
-            .andThen(new WaitCommand(3.0)));
+            .andThen(new WaitCommand(1.5)));
+    NamedCommands.registerCommand(
+        "aim-subwoofer-repeat",
+        new InstantCommand(
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
+                }));
     NamedCommands.registerCommand(
         "shooter-stop",
         new InstantCommand(
@@ -187,6 +193,14 @@ public class RobotContainer {
         "rollers-stop",
         new InstantCommand(
             () -> {
+              robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+              robotIntake.runIntake(IntakeSetpoints.STOPPED);
+            }));
+    NamedCommands.registerCommand(
+        "super-stop",
+        new InstantCommand(
+            () -> {
+              robotShooter.runShooter(ShooterSetpoints.STOPPED);
               robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
               robotIntake.runIntake(IntakeSetpoints.STOPPED);
             }));
@@ -204,7 +218,36 @@ public class RobotContainer {
                 robotIndexer,
                 robotIntake)
             .repeatedly()
-            .withTimeout(1.0));
+            .withTimeout(0.5));
+    NamedCommands.registerCommand(
+        "aim-fire-stow",
+        new InstantCommand(
+                () -> {
+                  robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
+                })
+            .andThen(new WaitCommand(1.5))
+            .andThen(
+                Commands.runEnd(
+                        () -> {
+                          robotIndexer.runIndexer(IndexerSetpoints.SPEAKER_SHOOT);
+                          robotIntake.runIntake(IntakeSetpoints.SPEAKER_SHOOT);
+                        },
+                        () -> {
+                          robotIndexer.runIndexer(IndexerSetpoints.STOPPED);
+                          robotIntake.runIntake(IntakeSetpoints.STOPPED);
+                        },
+                        robotIndexer,
+                        robotIntake)
+                    .repeatedly()
+                    .withTimeout(0.5))
+            .andThen(
+                new InstantCommand(
+                    () -> {
+                      robotIndexer.runIndexer(IndexerSetpoints.STOW);
+                      robotIntake.runIntake(IntakeSetpoints.INTAKE);
+                      robotShooter.runShooter(ShooterSetpoints.INTAKE);
+                    })));
+
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     // Set up SysId routines
