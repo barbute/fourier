@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -39,7 +40,7 @@ import frc.robot.subsystems.climb.ClimbIOSim;
 import frc.robot.subsystems.climb.ClimbIOSparkMax;
 // import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.Drive.DriveState;
+import frc.robot.subsystems.drive.Drive.DriveSetpoints;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
@@ -180,9 +181,9 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "aim-subwoofer-repeat",
         new InstantCommand(
-                () -> {
-                  robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
-                }));
+            () -> {
+              robotShooter.runShooter(ShooterSetpoints.SUBWOOFER);
+            }));
     NamedCommands.registerCommand(
         "shooter-stop",
         new InstantCommand(
@@ -314,7 +315,7 @@ public class RobotContainer {
         () -> -pilotController.getLeftX(),
         () -> -pilotController.getRightX());
     robotDrive.setDefaultCommand(
-        Commands.run(() -> robotDrive.setDriveState(DriveState.TELEOPERATED), robotDrive));
+        Commands.run(() -> robotDrive.runDrive(DriveSetpoints.TELEOPERATED), robotDrive));
 
     pilotController
         .a()
@@ -517,12 +518,9 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Commands.runOnce(() -> robotDrive.setDriveState(DriveState.AUTO), robotDrive)
-        .andThen(autoChooser.get())
-        .handleInterrupt(
-            () -> {
-              robotDrive.setDriveState(DriveState.STOPPED);
-            });
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> robotDrive.runDrive(DriveSetpoints.AUTO), robotDrive),
+        autoChooser.get());
   }
 
   /** Returns the Chassis instance to run in robotPeriodic() */

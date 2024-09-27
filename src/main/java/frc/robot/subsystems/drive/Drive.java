@@ -58,7 +58,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Drive extends SubsystemBase {
   /** All possible states the drive subsystem can be in */
-  public enum DriveState {
+  public enum DriveSetpoints {
     /** Driving with input from driver controllers */
     TELEOPERATED,
     /** Driving based on preplanned trajectories */
@@ -124,7 +124,7 @@ public class Drive extends SubsystemBase {
       new SwerveDriveOdometry(KINEMATICS, rawGyroRotation, lastModulePositions);
 
   private TeleoperatedController teleoperatedController = null;
-  private DriveState driveState = DriveState.STOPPED;
+  private DriveSetpoints driveSetpointState = DriveSetpoints.STOPPED;
 
   /** The currently desired chassis speeds */
   private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
@@ -256,7 +256,7 @@ public class Drive extends SubsystemBase {
     TargetingSystem.getInstance().updateCurrentFilteredPosition(new Pose3d(getPoseEstimate()));
 
     // Set desired speeds and run desired actions based on the current commanded stated of the drive
-    switch (driveState) {
+    switch (driveSetpointState) {
       case TELEOPERATED:
         if (teleoperatedController != null) {
           desiredSpeeds =
@@ -294,8 +294,8 @@ public class Drive extends SubsystemBase {
       runVelocity(desiredSpeeds);
     }
 
-    if (driveState != null) {
-      Logger.recordOutput("Drive/State", driveState);
+    if (driveSetpointState != null) {
+      Logger.recordOutput("Drive/State", driveSetpointState);
     } else {
       Logger.recordOutput("Drive/State", "none");
     }
@@ -306,8 +306,8 @@ public class Drive extends SubsystemBase {
    *
    * @param desiredState The desired state
    */
-  public void setDriveState(DriveState desiredState) {
-    driveState = desiredState;
+  public void runDrive(DriveSetpoints desiredState) {
+    driveSetpointState = desiredState;
     // TODO: Add logic to reset the heading controller when I make that if the state is the heading
     // controller
   }
@@ -318,20 +318,6 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
-    //   for (int i = 0; i < 4; i++) {
-    //     // Optimized azimuth setpoint angles
-    //     optimizedSetpointStates[i] =
-    //         SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
-
-    //     // Prevent jittering from small joystick inputs or noise
-    //     optimizedSetpointStates[i] =
-    //         (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
-    //                 > 0.01)
-    //             ? modules[i].runSetpoint(optimizedSetpointStates[i])
-    //             : modules[i].runSetpoint(
-    //                 new SwerveModuleState(
-    //                     optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
-
     ChassisSpeeds discreteSpeeds = discretize(speeds);
     desiredChassisSpeeds = discreteSpeeds;
     SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
