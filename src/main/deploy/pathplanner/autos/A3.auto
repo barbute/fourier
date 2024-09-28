@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.6613361837834789,
+      "y": 4.443911160970471
+    },
+    "rotation": -59.868835342346514
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "aim-subwoofer"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "fire"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "rollers-stop"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shooter-stop"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "one-piece",
+  "choreoAuto": false
+}
